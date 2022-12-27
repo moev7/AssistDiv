@@ -21,7 +21,7 @@ cv2.namedWindow("Color frame")
 cv2.setMouseCallback("Color frame", show_distance)
 
 while True:
-    ret, depth_frame, color_frame = cam.get_frame()
+    depth_frame, color_frame = cam.get_frame()
     #detector = Detector(model_type="PS")
 
     # Showing distance for a specific point

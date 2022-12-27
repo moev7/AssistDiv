@@ -10,10 +10,6 @@ from detectron2.data import MetadataCatalog
 from detectron2.utils.visualizer import ColorMode, Visualizer
 from detectron2 import model_zoo
 
-"""
-This file explores the possibility of avoiding the zero value for the minimum distance.
-Even without zeros, the minimum would appear to be 1, 2 or 3 mm, which is still inacurate
-"""
 
 
 cfg = get_cfg()
@@ -32,7 +28,7 @@ point = (300, 300)
 
 
 
-def min_dis():
+def avg_dis():
 
 # Initialize Camera Intel Realsense
     cam = DepthCamera()
@@ -40,14 +36,18 @@ def min_dis():
     while True:
         depth_frame, color_frame = cam.get_frame()
 
-        #calculate min depth of frame in general and exlude 0 
+        #calculate avg depth of frame in general
+        avg = np.mean(color_frame)
         
-        masked_a = np.ma.masked_equal(color_frame, 0, copy=False)
-        min = masked_a.min()
 
-        # Show distance for a specific point (minimum in frame)
+        # Show distance for a specific point (minimum and average in frame)
         cv2.circle(color_frame, point, 5, (0, 0, 230))
-        cv2.putText(color_frame, "{} mm".format(int(min)), (point[0], point[1] - 50), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
+
+        avg_distance = int(avg)
+       
+
+        cv2.putText(color_frame, "{} mm".format(avg_distance), (point[0], point[1] - 20), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
+        
 
         #Show description of objects in boxes
         predictions = predictor(color_frame)
@@ -56,7 +56,6 @@ def min_dis():
 
         #display the output
         cv2.imshow("Color frame", output.get_image()[:,:,::-1])
-        
 
 
         key = cv2.waitKey(1)

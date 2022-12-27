@@ -9,7 +9,7 @@ import numpy as np
 #for testing purposes: trying different types of object detection with detectron2 on image, video or webcam
 
 class Detector:
-    def __init__(self, model_type = "OD"):
+    def __init__(self, model_type):
         self.cfg = get_cfg()
         self.model_type = model_type
 
@@ -34,12 +34,13 @@ class Detector:
             self.cfg.merge_from_file(model_zoo.get_config_file("COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml"))
             self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml")
 
+        self.predictor = DefaultPredictor(self.cfg)
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
         self.cfg.MODEL.DEVICE = "cuda" #cpu or cuda
 
-        self.predictor = DefaultPredictor(self.cfg)
+        
 
-    def onImage(self,imagePath):
+    def detectOnImage(self,imagePath):
         image = cv2.imread(imagePath)
         if self.model_type != "PS":
             predictions = self.predictor(image)
@@ -53,21 +54,14 @@ class Detector:
             predictions, segmentInfo = self.predictor(image)["panoptic_seg"]
             viz = Visualizer(image[:,:,::-1], MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]))
             output = viz.draw_panoptic_seg_predictions(predictions.to("cpu"), segmentInfo)
-        boxes = predictions["instances"].pred_boxes
-        mp = []
-        for i in boxes.__iter__():
-            results = i.cpu().numpy()
-            midpoint = ((int((results[0]+results[2])/2)), (int((results[1]+results[3])/2)))
-            mp.append((midpoint[0],midpoint[1]))
-        print(mp)
-            #print(i.cpu().numpy())
-            #print(midpoints[0])
-        cv2.namedWindow("Result")
-        cv2.putText(image, "MIDPOINT", (30, 35), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
+
         cv2.imshow("Result", output.get_image()[:,:,::-1])
         cv2.waitKey(0)
 
-    def onVideo(self,videoPath):
+
+
+
+    def detectOnVideo(self,videoPath):
         cap = cv2.VideoCapture(videoPath)
 
         if (cap.isOpened()==False):
@@ -94,11 +88,15 @@ class Detector:
 
             key = cv2.waitKey(1) & 0xFF
 
-            if key == ord("q"):
+            if key == 27:
                 break
             (sucess, image) = cap.read()
 
-    def onWebcam(self):
+
+
+
+
+    def detectOnWebcam(self):
         cap = cv2.VideoCapture("/dev/video6")
 
         if (cap.isOpened()==False):
