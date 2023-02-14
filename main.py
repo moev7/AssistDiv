@@ -5,6 +5,7 @@ import position_in_frame as pf
 import min_without_zeros as md
 import averageDis as ad
 import listing_objects as lt
+import positions2 as p2
 
 
 def main():
@@ -65,9 +66,9 @@ def menu():
         pf.posOnVideo("videos/testvid.mp4")
         main()
     elif choice == "11":
-        pf.posOnWebcam()
+        p2.posOnWebcam()
         main()
-    elif choice=="12":
+    elif choice=="12":     
         sys.exit
     else:
         print("You must only select a valid number")

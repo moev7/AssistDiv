@@ -9,6 +9,7 @@ from detectron2.config import get_cfg
 from detectron2.data import MetadataCatalog
 from detectron2.utils.visualizer import ColorMode, Visualizer
 from detectron2 import model_zoo
+import time
 
 
 
@@ -106,6 +107,8 @@ def posOnVideo(videoPath):
             break
         (sucess, image) = cap.read()
 
+        
+#better version in positions2 file
 def posOnWebcam():
 
 # Initialize Camera Intel Realsense
@@ -136,13 +139,14 @@ def posOnWebcam():
             dis.append(int(dist))
             class_index = detected_class_indexes[i]
             class_name = class_catalog[class_index]
+            if dist == 0:
+                continue
             if (midpoint[0]<=213):
-                print("The ", class_name, " is ", dist, " mm away on your left side")
+                print("The ", class_name, " is ", dist/1000, " m away on your left side")
             if (midpoint[0]>213 and midpoint[0]<=427):
-                print("The ", class_name, " is ", dist, " mm away in front of you")
+                print("The ", class_name, " is ", dist/1000, " m away in front of you")
             if (midpoint[0]>427):
-                print("The ", class_name, " is ", dist, " mm away on your right side")
-
+                print("The ", class_name, " is ", dist/1000, " m away on your right side")
 
         #display the output
         cv2.imshow("Color frame", output.get_image()[:,:,::-1])
