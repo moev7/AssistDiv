@@ -1,4 +1,4 @@
-# Machine Learning Methods for Assertive Solutions
+# Machine Learning Methods for Assistive Solutiond
 
 ## Description:
 
