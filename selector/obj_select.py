@@ -24,7 +24,6 @@ cfg.MODEL.DEVICE = "cuda" #cpu or cuda
 
 predictor = DefaultPredictor(cfg)
 
-
 def Select_onWebcam():
 # Initialize Camera Intel Realsense
     cam = DepthCamera()
@@ -60,6 +59,8 @@ def Select_onWebcam():
             if dist == 0:
                 continue
         if len(info):
+            info.sort(key=lambda info: info[1])
+            print(info)
             for c in info:
                 print(c[0])
 

@@ -82,7 +82,6 @@ def posOnWebcam():
         if key == 27:
             break   
         
-posOnWebcam()
 
 #more user-friendly print on cpu, currently using 2s sleep
 #not the same things are found in all or consecutive frames so avg is hard to find
