@@ -1,79 +1,80 @@
-#Main menu
-import sys
-import object_detections as od
-import position_in_frame as pf
-import min_without_zeros as md
-import averageDis as ad
-import listing_objects as lt
-import positions2 as p2
+from camera_utils import initialize_camera, get_camera_frames
+from detectron_utils import initialize_detectron, run_object_detection, visualize_and_get_detected_objects
+from sound_utils import play_beep_sound
+from speech_utils import speak, announce_objects
+from relationship_utils import describe_relationship
+from distance_utils import get_object_distance, get_updated_distance
+
+import cv2
+import numpy as np
 
 
-def main():
-   menu()
 
 
-def menu():
-    print("************Hello, what would you like to do?**************")
-    print()
+beeping_enabled = False
+pipeline = initialize_camera()
 
-    choice = input("""
-                      1: Detect objects on image
-                      2: Detect objects on video
-                      3: Detect objects on webcam
-                      4: List detected objects in image
-                      5: List detected objects in video
-                      6: List detected objects from webcam
-                      7: Show average distance in webcam frame
-                      8: Show minimum distance in webcam frame
-                      9: Print position of objects in image
-                      10: Print position of objects in video
-                      11: Print position and distance of object in webcam
-                      12: Quit
+predictor, cfg = initialize_detectron()
+try:
+    while True:
+        detected_objects = []
+        
+        # Get camera frames
+        depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
+        
 
-                      Please enter your choice: """)
+        # Run object detection
+        outputs = run_object_detection(predictor, color_image)
 
-    if choice == "1":
-        detector = od.Detector(model_type = "OD")
-        detector.detectOnImage("images/1.jpg")
-        main()
-    elif choice == "2":
-        detector = od.Detector(model_type = "OD")
-        detector.detectOnVideo("videos/testvid.mp4")
-        main()
-    elif choice == "3":
-        detector = od.Detector(model_type = "OD")
-        detector.detectOnWebcam()
-        main()
-    elif choice == "4":
-        lt.listOnImage("images/1.jpg")
-        main()
-    elif choice == "5":
-        lt.listOnVideo("videos/testvid.mp4")
-        main()
-    elif choice == "6":
-        lt.listOnWebcam()
-        main()
-    elif choice == "7":
-        ad.avg_dis()
-        main()
-    elif choice == "8":
-        md.min_dis()
-        main()
-    elif choice == "9":
-        pf.posOnImage("images/1.jpg")
-        main()
-    elif choice == "10":
-        pf.posOnVideo("videos/testvid.mp4")
-        main()
-    elif choice == "11":
-        p2.posOnWebcam()
-        main()
-    elif choice=="12":     
-        sys.exit
-    else:
-        print("You must only select a valid number")
-        print("Please try again")
-        menu()
+        detected_objects = visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg)
+        if not beeping_enabled or not selected_obj_flag:        
+            #speak("Hello, Welcome to AssistDiv. Select U for scene understanding and O for object detection.")
+
+            user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
+            if user_input.lower() == 'u':
+                speak("There are " + str(len(detected_objects)) + " objects detected in the scene.")
+                for i, obj in enumerate(detected_objects):
+                    speak(f"{i + 1}: {obj['name']}")
+
+            if user_input.lower() == 'o':
+                speak("Select one of the following objects to find where it's placed:")
+                for i, obj in enumerate(detected_objects):
+                    speak(f"{i + 1}: {obj['name']}")
+                user_input = input("Enter 's' to select an object or 'q' to quit: ")
+
+                if user_input.lower() == 's':
+                    selected_obj_distance, selected_obj = get_object_distance(detected_objects, 640)
+                    selected_obj_flag = True
+                elif user_input.lower() == 'b':
+                    beeping_enabled = True
+                elif user_input.lower() == 'q':
+                    break
+
+        if selected_obj_flag and not beeping_enabled :
+            selected_obj_name = selected_obj["name"]
+            if any(obj["name"] == selected_obj_name for obj in detected_objects):
+                updated_distance = get_updated_distance(selected_obj, detected_objects)
+                speak("Enter 'b' to enable beeping, or 'q' to quit: ")
+                user_input = input("Enter 'b' to enable beeping, or 'q' to quit: ")
+                if user_input.lower() == 'b':
+                    beeping_enabled = True
+                elif user_input.lower() == 'q':
+                    break
+            
 
 
-main()
+        if beeping_enabled :
+            selected_obj_name = selected_obj["name"]
+            if any(obj["name"] == selected_obj_name for obj in detected_objects):
+                updated_distance = get_updated_distance(selected_obj, detected_objects)
+                play_beep_sound(updated_distance)
+
+
+        # Exit the loop when 'q' is pressed
+        key = cv2.waitKey(1)
+        if key == ord("q"):
+            break
+
+finally:
+    pipeline.stop()
+    cv2.destroyAllWindows()
