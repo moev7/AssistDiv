@@ -28,14 +28,14 @@ def run_object_detection(predictor, color_image):
 def visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg):
     v = Visualizer(color_image, metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), instance_mode=ColorMode.IMAGE)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    
+
     detected_objects = []
-    
+
     for i, (class_idx, mask, box) in enumerate(zip(outputs["instances"].pred_classes.to("cpu"), outputs["instances"].pred_masks.to("cpu"), outputs["instances"].pred_boxes.tensor)):
         instance_mask = mask.cpu().numpy().astype(np.uint8)
         masked_depth_image = depth_image.copy() * instance_mask
         distances = masked_depth_image[np.nonzero(masked_depth_image)]
-        
+
         if len(distances) > 0:
             mean_distance = np.mean(distances) / 1000
         else:
@@ -61,10 +61,14 @@ def visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg):
 
     output_image = out.get_image()[:, :, ::-1]
     output_image_resized = cv2.resize(output_image, (color_image.shape[1], color_image.shape[0]))
-    
+
     cv2.imshow("Instance Segmentation and Distance", np.hstack((color_image, output_image_resized)))
 
+    # Sort detected_objects based on the x-coordinate of centroids
+    detected_objects.sort(key=lambda obj: obj['centroid'][0])
+
     return detected_objects
+
 
 
 def initialize_detectron():

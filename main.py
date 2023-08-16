@@ -8,10 +8,8 @@ from distance_utils import get_object_distance, get_updated_distance
 import cv2
 import numpy as np
 
-
-
-
 beeping_enabled = False
+selected_obj_flag = False
 pipeline = initialize_camera()
 
 predictor, cfg = initialize_detectron()
@@ -28,22 +26,23 @@ try:
 
         detected_objects = visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg)
         if not beeping_enabled or not selected_obj_flag:        
-            #speak("Hello, Welcome to AssistDiv. Select U for scene understanding and O for object detection.")
+            #speak("Hello, Welcome to Assist Div. Select U for scene understanding and O for object detection.")
 
             user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
             if user_input.lower() == 'u':
-                speak("There are " + str(len(detected_objects)) + " objects detected in the scene.")
+                speak("There are " + str(len(detected_objects)) + " objects detected in the scene. The objects located from left to right side of the frame are:")
                 for i, obj in enumerate(detected_objects):
+                    print("passed")
                     speak(f"{i + 1}: {obj['name']}")
 
             if user_input.lower() == 'o':
-                speak("Select one of the following objects to find where it's placed:")
+                #speak("Select one of the following objects to find where it's placed:")
                 for i, obj in enumerate(detected_objects):
                     speak(f"{i + 1}: {obj['name']}")
                 user_input = input("Enter 's' to select an object or 'q' to quit: ")
 
                 if user_input.lower() == 's':
-                    selected_obj_distance, selected_obj = get_object_distance(detected_objects, 640)
+                    selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image,720)
                     selected_obj_flag = True
                 elif user_input.lower() == 'b':
                     beeping_enabled = True

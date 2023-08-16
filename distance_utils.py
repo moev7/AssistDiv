@@ -1,21 +1,22 @@
 
 from num2words import num2words
 from speech_utils import speak
-from relationship_utils import describe_relationship
+from relationship_utils import describe_relationship, generate_scene_graph, describe_all_relationships, plot_scene_graph
+
+
 
 def get_updated_distance(selected_obj, detected_objects):
-    print("Detected objects:", detected_objects)
-    print("Selected object:", selected_obj)
+    #print("Selected object:", selected_obj)
     for obj in detected_objects:
         if obj["id"] == selected_obj["id"]:
             return obj["distance"]
     return None
 
-def get_object_distance(detected_objects, frame_width):
+def get_object_distance(detected_objects, depth_image ,frame_width):
     if not detected_objects:
         print("No objects detected.")
         return
-
+    
     print("Available objects:")
     for i, obj in enumerate(detected_objects):
         print(f"{i + 1}: {obj['name']}")
@@ -43,7 +44,16 @@ def get_object_distance(detected_objects, frame_width):
 
             speak(f"The {selected_obj['name']} is {direction} {integer_part_in_words} point {decimal_part_in_words} meters away.")
             print("\nRelationships with other objects:")
+            relationships = describe_all_relationships(detected_objects)
+            #scene_graph = generate_scene_graph(relationships)
             describe_relationship(selected_obj, detected_objects)
+            # Pass the detected objects to the function
+            path_message = find_clear_path(depth_image)
+
+            print("PATH: " + path_message)
+            #plot_scene_graph(scene_graph)
+            
+            
 
         elif index == len(detected_objects):
             print("Operation cancelled.")
@@ -53,3 +63,31 @@ def get_object_distance(detected_objects, frame_width):
         print("Invalid input. Please enter a valid number.")
     return selected_obj['distance'], selected_obj
 
+import numpy as np
+
+
+def find_clear_path(depth_image):
+    height, width = depth_image.shape
+    min_distance = 2000  # In millimeters
+    threshold = 0.8
+
+    # Define the regions of interest (ROI) representing potential paths
+    paths_roi = {
+        'left': (0, int(width * 0.25)),
+        'front': (int(width * 0.25), int(width * 0.75)),
+        'right': (int(width * 0.75), width),
+    }
+
+    def is_path_clear(roi):
+        roi_start, roi_end = roi
+        roi_pixels = depth_image[:, roi_start:roi_end]
+        clear_pixels = np.sum(roi_pixels > min_distance)
+
+        return clear_pixels / roi_pixels.size > threshold
+
+    clear_paths = [direction for direction, roi in paths_roi.items() if is_path_clear(roi)]
+
+    if not clear_paths:
+        return "No clear path found."
+    else:
+        return f"It seems like there is a way on your {', '.join(clear_paths)} side."
