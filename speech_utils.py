@@ -1,6 +1,7 @@
 from gtts import gTTS
 import os
 import tempfile
+import speech_recognition as sr
 
 
 def speak(text, language='en', slow=False):
@@ -19,3 +20,15 @@ def announce_objects(detected_objects):
         speak(f"Detected {obj_count} objects.")
         for obj in detected_objects:
             speak(f"{obj['name']} at {obj['distance']:.2f} meters.")
+
+def get_voice_input():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = r.listen(source)
+        try:
+            text = r.recognize_google(audio).lower()  # Using Google's voice recognition
+            return text
+        except:
+            speak("Sorry, I did not understand that. Please try again.")
+            return None

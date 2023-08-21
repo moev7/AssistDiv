@@ -80,7 +80,7 @@ def describe_all_relationships(detected_objects):
         for obj1, obj2, rel in relationships:
             print("ALL RELATIONSHIPS: ")
             print(f"{obj1['name']} is {rel}the {obj2['name']}.")
-            # speak(f"{obj1['name']} is {rel}the {obj2['name']}.")
+            speak(f"{obj1['name']} is {rel}the {obj2['name']}.")
 
     return relationships
 
