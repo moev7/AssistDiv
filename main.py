@@ -1,5 +1,5 @@
 from camera_utils import initialize_camera, get_camera_frames
-from detectron_utils import initialize_detectron, run_object_detection, visualize_and_get_detected_objects
+from detectron_utils import initialize_detectron, run_object_detection, visualize_and_get_detected_objects, get_objects_by_position
 from sound_utils import play_beep_sound
 from speech_utils import speak, announce_objects, get_voice_input
 from relationship_utils import describe_relationship
@@ -31,20 +31,17 @@ try:
 
             #user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
             user_input = get_voice_input()
+            print(user_input)
             if user_input == 'scan the scene':
-                speak("There are " + str(len(detected_objects)) + " objects detected in the scene. The objects located from left to right side of the frame are:")
-                for i, obj in enumerate(detected_objects):
-                    print("passed")
-                    speak(f"{i + 1}: {obj['name']}")
                 repeat = True
+                detected_objects = visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg)
+                get_objects_by_position(detected_objects)
+
                 while repeat == True:
                     speak("Say repeat to repeat the object names. Say return to do another task. say quit to exit assist div.")
                     user_input = get_voice_input()
                     if user_input == 'repeat':
-                        speak("There are " + str(len(detected_objects)) + " objects detected in the scene. The objects located from left to right side of the frame are:")
-                        for i, obj in enumerate(detected_objects):
-                            print("passed")
-                            speak(f"{i + 1}: {obj['name']}")
+                        get_objects_by_position(detected_objects)
                     elif user_input == "return":
                         repeat = False
                     elif user_input == 'quit':
@@ -59,6 +56,7 @@ try:
                 
                 speak("Say Select to select an object and Quit to exit AssistDiv.")
                 user_input = get_voice_input()
+                print(user_input)
 
                 if user_input == 'select':
                     selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image,720)

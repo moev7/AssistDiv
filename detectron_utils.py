@@ -8,6 +8,7 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data.catalog import MetadataCatalog
 import cv2
 import numpy as np
+from speech_utils import speak
 
 def initialize_detectron():
     cfg = get_cfg()
@@ -18,6 +19,57 @@ def initialize_detectron():
     cfg.MODEL.DEVICE = "cuda" #cpu or cuda
     predictor = DefaultPredictor(cfg)
     return predictor
+
+
+def get_objects_by_position(detected_objects):
+    left_objects = []
+    front_objects = []
+    right_objects = []
+
+    image_width = 720  # Assuming the width of the image is 720 pixels
+
+    for obj in detected_objects:
+        if obj["centroid"][0] < image_width // 3:
+            left_objects.append(obj)
+        elif obj["centroid"][0] > (2 * image_width) // 3:
+            right_objects.append(obj)
+        else:
+            front_objects.append(obj)
+
+    # Sort objects in each category by the area of their masks (number of pixels)
+    left_objects.sort(key=lambda obj: np.sum(obj['mask']))
+    front_objects.sort(key=lambda obj: np.sum(obj['mask']))
+    right_objects.sort(key=lambda obj: np.sum(obj['mask']))
+
+    # Only keep the objects with the largest area in each category
+    left_objects = [max(left_objects, key=lambda obj: np.sum(obj['mask']))] if left_objects else []
+    front_objects = [max(front_objects, key=lambda obj: np.sum(obj['mask']))] if front_objects else []
+    right_objects = [max(right_objects, key=lambda obj: np.sum(obj['mask']))] if right_objects else []
+
+    # Round the distance to one decimal place for each object
+    for obj in left_objects:
+        obj["distance"] = round(obj["distance"], 1)
+    for obj in front_objects:
+        obj["distance"] = round(obj["distance"], 1)
+    for obj in right_objects:
+        obj["distance"] = round(obj["distance"], 1)
+    
+    speak("There are " + str(len(detected_objects)) + " objects detected in the scene.")
+
+    if left_objects:
+        speak("Objects on the left side are:")
+        for obj in left_objects:
+            speak(f"{obj['name']} at {obj['distance']} meters")
+
+    if front_objects:
+        speak("\nObjects in front of you are:")
+        for obj in front_objects:
+            speak(f"{obj['name']} at {obj['distance']} meters")
+
+    if right_objects:
+        speak("\nObjects on your right side are:")
+        for obj in right_objects:
+            speak(f"{obj['name']} at {obj['distance']} meters")
 
 
 
