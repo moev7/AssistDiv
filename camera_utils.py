@@ -1,5 +1,6 @@
 import numpy as np
 import pyrealsense2.pyrealsense2 as rs
+import time
 
 def initialize_camera():
     # Initialize the RealSense camera
@@ -12,7 +13,12 @@ def initialize_camera():
     pipeline.start(config)
     return pipeline
 
-def get_camera_frames(pipeline):
+
+def get_camera_frames(pipeline, skip_frames=50):
+    # Skip initial frames for camera to calibrate itself
+    for _ in range(skip_frames):
+        pipeline.wait_for_frames()
+
     # Get camera frames
     frames = pipeline.wait_for_frames()
     depth_frame = frames.get_depth_frame()
@@ -20,6 +26,7 @@ def get_camera_frames(pipeline):
 
     depth_image = np.asanyarray(depth_frame.get_data())
     color_image = np.asanyarray(color_frame.get_data())
+
     # Get the IMU frames
     gyro_frame = frames.first_or_default(rs.stream.gyro)
     accel_frame = frames.first_or_default(rs.stream.accel)

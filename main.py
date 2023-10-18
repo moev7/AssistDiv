@@ -1,60 +1,67 @@
 from camera_utils import initialize_camera, get_camera_frames
 from detectron_utils import initialize_detectron, run_object_detection, visualize_and_get_detected_objects, get_objects_by_position
-from sound_utils import play_beep_sound
+from sound_utils import play_beep_sound, play_obstacle_beep_sound
 from speech_utils import speak, announce_objects, get_voice_input
 from relationship_utils import describe_relationship
 from distance_utils import get_object_distance, get_updated_distance
-
+import time
 import cv2
 import numpy as np
 
 beeping_enabled = False
 selected_obj_flag = False
 pipeline = initialize_camera()
-
+depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
 
 predictor, cfg = initialize_detectron()
+print("first pass")
+
+#detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
+
+
 try:
     while True:
         detected_objects = []
-        
+
         # Get camera frames
         depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
         
-
-        # Run object detection
-        outputs = run_object_detection(predictor, color_image)
-
-        detected_objects = visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg)
-        if not beeping_enabled or not selected_obj_flag:        
-            speak("Hello, Welcome to Assist Div. Say Scan the scene for scene understanding and Find objects for object detection. Say quit to exit assist div")
-
+        #detected_objects = visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg)
+        #print("second pass")        
+        
+        
+        if not beeping_enabled or not selected_obj_flag: 
+            
+            #speak("Hello, Welcome to Assist Div. Say Scan the scene for scene understanding and Find objects for object detection. Say quit to exit assist div")
+            
             #user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
-            user_input = get_voice_input()
+            user_input = 'scan the scene' #get_voice_input()
             print(user_input)
+            
+            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
+
             if user_input == 'scan the scene':
                 repeat = True
-                detected_objects = visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg)
+                detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
                 get_objects_by_position(detected_objects)
 
                 while repeat == True:
                     speak("Say repeat to repeat the object names. Say return to do another task. say quit to exit assist div.")
                     user_input = get_voice_input()
+                    print(user_input)
                     if user_input == 'repeat':
                         get_objects_by_position(detected_objects)
                     elif user_input == "return":
                         repeat = False
                     elif user_input == 'quit':
                         break
-
-
-
+                        
             if user_input == 'find objects':
                 speak("Select one of the following objects to find where it's placed:")
                 for i, obj in enumerate(detected_objects):
                     speak(f"{i + 1}: {obj['name']}")
                 
-                speak("Say Select to select an object and Quit to exit AssistDiv.")
+                speak("Say Select to select an object and say Quit to exit AssistDiv.")
                 user_input = get_voice_input()
                 print(user_input)
 
@@ -76,18 +83,17 @@ try:
                     beeping_enabled = True
                 elif user_input == 'quit':
                     break
-            
-
 
         if beeping_enabled :
             selected_obj_name = selected_obj["name"]
             if any(obj["name"] == selected_obj_name for obj in detected_objects):
                 updated_distance = get_updated_distance(selected_obj, detected_objects)
                 play_beep_sound(updated_distance)
-
+        #play_obstacle_beep_sound(depth_image)
+        
         if user_input == 'quit':
             break
-
+        
         # Exit the loop when 'q' is pressed
         key = cv2.waitKey(1)
         if key == ord("q"):

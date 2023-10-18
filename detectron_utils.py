@@ -9,7 +9,7 @@ from detectron2.data.catalog import MetadataCatalog
 import cv2
 import numpy as np
 from speech_utils import speak
-
+'''
 def initialize_detectron():
     cfg = get_cfg()
     #load model config and pretrained model
@@ -19,32 +19,39 @@ def initialize_detectron():
     cfg.MODEL.DEVICE = "cuda" #cpu or cuda
     predictor = DefaultPredictor(cfg)
     return predictor
-
+'''
 
 def get_objects_by_position(detected_objects):
+    speak("There are " + str(len(detected_objects)) + " objects detected in the scene.")
     left_objects = []
     front_objects = []
     right_objects = []
 
     image_width = 720  # Assuming the width of the image is 720 pixels
-
+    
+    left_threshold = image_width // 3
+    right_threshold = (2 * image_width) // 3
+    
     for obj in detected_objects:
-        if obj["centroid"][0] < image_width // 3:
+        # Get all the x coordinates of the pixels occupied by the object
+        x_pixels = np.where(obj['mask'])[1]
+        left_pixels = np.sum(x_pixels < left_threshold)
+        right_pixels = np.sum(x_pixels > right_threshold)
+        front_pixels = np.sum((x_pixels >= left_threshold) & (x_pixels <= right_threshold))
+
+        # Choose the section where the object has the most pixels
+        if left_pixels > right_pixels and left_pixels > front_pixels:
             left_objects.append(obj)
-        elif obj["centroid"][0] > (2 * image_width) // 3:
+            print("left objs: ")
+            print(left_objects)
+        elif right_pixels > left_pixels and right_pixels > front_pixels:
             right_objects.append(obj)
+            print("right objs: ")
+            print(right_objects)
         else:
             front_objects.append(obj)
-
-    # Sort objects in each category by the area of their masks (number of pixels)
-    left_objects.sort(key=lambda obj: np.sum(obj['mask']))
-    front_objects.sort(key=lambda obj: np.sum(obj['mask']))
-    right_objects.sort(key=lambda obj: np.sum(obj['mask']))
-
-    # Only keep the objects with the largest area in each category
-    left_objects = [max(left_objects, key=lambda obj: np.sum(obj['mask']))] if left_objects else []
-    front_objects = [max(front_objects, key=lambda obj: np.sum(obj['mask']))] if front_objects else []
-    right_objects = [max(right_objects, key=lambda obj: np.sum(obj['mask']))] if right_objects else []
+            print("front objs: ")
+            print(front_objects)
 
     # Round the distance to one decimal place for each object
     for obj in left_objects:
@@ -77,7 +84,10 @@ def run_object_detection(predictor, color_image):
     outputs = predictor(color_image)
     return outputs
 
-def visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg):
+
+
+def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg):
+    outputs = run_object_detection(predictor, color_image)
     v = Visualizer(color_image, metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), instance_mode=ColorMode.IMAGE)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
 
@@ -113,15 +123,13 @@ def visualize_and_get_detected_objects(color_image, depth_image, outputs, cfg):
 
     output_image = out.get_image()[:, :, ::-1]
     output_image_resized = cv2.resize(output_image, (color_image.shape[1], color_image.shape[0]))
-
     cv2.imshow("Instance Segmentation and Distance", np.hstack((color_image, output_image_resized)))
+    cv2.waitKey(1)
 
     # Sort detected_objects based on the x-coordinate of centroids
     detected_objects.sort(key=lambda obj: obj['centroid'][0])
 
     return detected_objects
-
-
 
 def initialize_detectron():
     cfg = get_cfg()

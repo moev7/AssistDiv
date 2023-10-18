@@ -28,8 +28,8 @@ def get_object_distance(detected_objects, depth_image ,frame_width):
 
     try:
         speak("Say the name of the object you want the distance for, or say Cancel")
-        object_name = get_voice_input().lower()
-
+        object_name = get_voice_input()
+        object_name = object_name.lower()
         if object_name == 'cancel':
             print("Operation cancelled.")
             return None, None
@@ -56,8 +56,8 @@ def get_object_distance(detected_objects, depth_image ,frame_width):
 
             speak(f"The {selected_obj['name']} is {direction} {integer_part_in_words} point {decimal_part_in_words} meters away.")
             print("\nRelationships with other objects:")
-            relationships = describe_all_relationships(detected_objects)
-            describe_relationship(selected_obj, detected_objects)
+            #relationships = describe_all_relationships(detected_objects)
+            #elationship(selected_obj, detected_objects)
             path_message = find_clear_path(depth_image)
             print("PATH: " + path_message)
             

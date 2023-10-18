@@ -1,5 +1,8 @@
 import pygame
 import time
+import pyrealsense2.pyrealsense2 as rs
+import numpy as np
+
 
 pygame.mixer.init()
 
@@ -16,3 +19,32 @@ def play_beep_sound(updated_distance):
 
     beep.play()
     time.sleep(interval)
+
+
+def play_obstacle_beep_sound(depth_image):
+    '''
+    # Initialize RealSense pipeline
+    pipeline = rs.pipeline()
+    config = rs.config()
+    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+
+    # Start the pipeline
+    pipeline.start(config)
+    '''
+    # Initialize Pygame
+    pygame.mixer.init()
+    beep = pygame.mixer.Sound("beep-07a.wav")
+    beep_playing = False
+
+    try:
+        while True:        
+            if np.any(depth_image < 500):  # 500 corresponds to 50 cm (1 cm = 10 mm)
+                if not beep_playing:
+                    beep.play()
+                    beep_playing = True
+            else:
+                if beep_playing:
+                    pygame.mixer.stop()
+                    beep_playing = False
+    finally:
+        pygame.mixer.quit()
