@@ -5,7 +5,7 @@ import numpy as np
 
 
 pygame.mixer.init()
-
+'''
 def play_beep_sound(updated_distance):
     beep = pygame.mixer.Sound("beep-07a.wav")
     if updated_distance > 2:
@@ -19,6 +19,29 @@ def play_beep_sound(updated_distance):
 
     beep.play()
     time.sleep(interval)
+'''
+
+def play_beep_sound(updated_distance):
+    pygame.mixer.init()
+    beep = pygame.mixer.Sound("beep-07a.wav")
+
+    # Determine the play duration based on the object's distance
+    if updated_distance > 2:
+        play_duration = 0.25  
+    elif updated_distance > 1.5:
+        play_duration = 0.5 
+    elif updated_distance > 1:
+        play_duration = 1 
+    elif updated_distance < 1:
+        play_duration = 3
+
+    # Play the beep sound in a loop
+    beep.play(-1)  # the -1 means to loop indefinitely
+
+    # Sleep for the duration of playtime, then stop the sound
+    time.sleep(play_duration)
+    beep.stop()
+
 
 
 def play_obstacle_beep_sound(depth_image):

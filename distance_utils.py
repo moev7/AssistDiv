@@ -6,30 +6,30 @@ import numpy as np
 
 
 def get_updated_distance(selected_obj, detected_objects):
-    #print("Selected object:", selected_obj)
     for obj in detected_objects:
-        if obj["id"] == selected_obj["id"]:
-            return obj["distance"]
-    return None
+        if obj["name"] == selected_obj["name"]:
+            return obj["distance"], obj["centroid"]  # return both distance and centroid
+    return 0, 0  # return None if the object is not found
+
 
 def get_object_distance(detected_objects, depth_image ,frame_width):
     if not detected_objects:
         print("No objects detected.")
         speak("No objects detected.")
         return
-    
+    '''
     print("Available objects:")
     speak("Available objects are")
     for i, obj in enumerate(detected_objects):
         print(f"{i + 1}: {obj['name']}")
         speak(f"{i + 1}: {obj['name']}")
     #speak(detected_objects)
+    '''
     
 
     try:
         speak("Say the name of the object you want the distance for, or say Cancel")
         object_name = get_voice_input()
-        object_name = object_name.lower()
         if object_name == 'cancel':
             print("Operation cancelled.")
             return None, None
@@ -64,10 +64,14 @@ def get_object_distance(detected_objects, depth_image ,frame_width):
         elif index == -1:
             print("Object not found. Please say a valid object name.")
             speak("Object not found. Please say a valid object name.")
+            selected_obj = None
+            selected_obj['distance'] = None
             
     except ValueError:
         print("Invalid input. Please enter a valid object name.")
         speak("Invalid input. Please enter a valid object name.")
+        selected_obj = None
+        selected_obj['distance'] = None
         
     return selected_obj['distance'], selected_obj
 
