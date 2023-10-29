@@ -5,6 +5,7 @@ import numpy as np
 
 
 pygame.mixer.init()
+
 '''
 def play_beep_sound(updated_distance):
     beep = pygame.mixer.Sound("beep-07a.wav")

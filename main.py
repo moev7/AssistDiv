@@ -40,7 +40,7 @@ try:
             #speak("Hello, Welcome to Assist Div. Say Scan the scene for scene understanding and Find objects for object detection. Say quit to exit assist div")
             
             #user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
-            user_input = 'find objects' #get_voice_input()
+            user_input = 'scan the scene' #get_voice_input()
             print(user_input)
 
             if user_input == 'scan the scene':
