@@ -31,13 +31,12 @@ try:
         # Get camera frames
         depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
         detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
-        #print("second pass")        
         
         
         if not beeping_enabled or not selected_obj_flag: 
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
             
-            #speak("Hello, Welcome to Assist Div. Say Scan the scene for scene understanding and Find objects for object detection. Say quit to exit assist div")
+            speak("Hello, Welcome to Assist Div. Say Scan the scene for scene understanding and Find objects for object detection. Say quit to exit assist div")
             
             #user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
             user_input = get_voice_input()

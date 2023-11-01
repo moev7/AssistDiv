@@ -30,16 +30,10 @@ def get_objects_by_position(detected_objects):
         # Choose the section where the object has the most pixels
         if left_pixels > right_pixels and left_pixels > front_pixels:
             left_objects.append(obj)
-            print("left objs: ")
-            print(left_objects)
         elif right_pixels > left_pixels and right_pixels > front_pixels:
             right_objects.append(obj)
-            print("right objs: ")
-            print(right_objects)
         else:
             front_objects.append(obj)
-            print("front objs: ")
-            print(front_objects)
 
     # Round the distance to one decimal place for each object
     for obj in left_objects:
