@@ -64,6 +64,7 @@ def get_objects_by_position(detected_objects):
 
 def run_object_detection(predictor, color_image):
     outputs = predictor(color_image)
+    print("2")
     return outputs
 
 
