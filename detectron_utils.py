@@ -10,7 +10,7 @@ import numpy as np
 from speech_utils import speak
 
 
-def get_objects_by_position(detected_objects):
+def get_objects_by_position(detected_objects, language='en'):
     left_objects = []
     front_objects = []
     right_objects = []
@@ -43,30 +43,120 @@ def get_objects_by_position(detected_objects):
     for obj in right_objects:
         obj["distance"] = round(obj["distance"], 1)
     
-    speak("There are " + str(len(detected_objects)) + " objects detected in the scene.")
+    def speak_with_language(text, language='en'):
+        if language == 'en':
+            speak(text, language)
+        elif language == 'es':
+            translated_text = spanish_translations.get(text, text)
+            speak(translated_text, language)
 
+    speak_with_language("There are " + str(len(detected_objects)) + " objects detected in the scene.", language)
+        
     if left_objects:
-        speak("Objects on the left side are:")
+        speak_with_language("Objects on the left side are:", language)
         for obj in left_objects:
-            speak(f"{obj['name']} at {obj['distance']} meters")
+            speak_with_language(f"{obj['name']} at {obj['distance']} meters", language)
 
     if front_objects:
-        speak("\nObjects in front of you are:")
+        speak_with_language("\nObjects in front of you are:", language)
         for obj in front_objects:
-            speak(f"{obj['name']} at {obj['distance']} meters")
+            speak_with_language(f"{obj['name']} at {obj['distance']} meters", language)
 
     if right_objects:
-        speak("\nObjects on your right side are:")
+        speak_with_language("\nObjects on your right side are:", language)
         for obj in right_objects:
-            speak(f"{obj['name']} at {obj['distance']} meters")
+            speak_with_language(f"{obj['name']} at {obj['distance']} meters", language)
 
 
 
 def run_object_detection(predictor, color_image):
     outputs = predictor(color_image)
-    print("2")
     return outputs
 
+
+    # Spanish translations for class names
+spanish_translations = {
+                "person": "persona",
+                "bicycle": "bicicleta",
+                "car": "coche",
+                "motorcycle": "motocicleta",
+                "airplane": "avión",
+                "bus": "autobús",
+                "train": "tren",
+                "truck": "camión",
+                "boat": "barco",
+                "traffic light": "semáforo",
+                "fire hydrant": "hidrante",
+                "stop sign": "señal de stop",
+                "parking meter": "parquímetro",
+                "bench": "banco",
+                "bird": "pájaro",
+                "cat": "gato",
+                "dog": "perro",
+                "horse": "caballo",
+                "sheep": "oveja",
+                "cow": "vaca",
+                "elephant": "elefante",
+                "bear": "oso",
+                "zebra": "cebra",
+                "giraffe": "jirafa",
+                "backpack": "mochila",
+                "umbrella": "paraguas",
+                "handbag": "bolso",
+                "tie": "corbata",
+                "suitcase": "maleta",
+                "frisbee": "frisbee",
+                "skis": "esquís",
+                "snowboard": "tabla de snowboard",
+                "sports ball": "pelota de deporte",
+                "kite": "cometa",
+                "baseball bat": "bate de béisbol",
+                "baseball glove": "guante de béisbol",
+                "skateboard": "monopatín",
+                "surfboard": "tabla de surf",
+                "tennis racket": "raqueta de tenis",
+                "bottle": "botella",
+                "wine glass": "copa de vino",
+                "cup": "taza",
+                "fork": "tenedor",
+                "knife": "cuchillo",
+                "spoon": "cuchara",
+                "bowl": "bol",
+                "banana": "plátano",
+                "apple": "manzana",
+                "sandwich": "sándwich",
+                "orange": "naranja",
+                "broccoli": "brócoli",
+                "carrot": "zanahoria",
+                "hot dog": "perro caliente",
+                "pizza": "pizza",
+                "donut": "donut",
+                "cake": "pastel",
+                "chair": "silla",
+                "couch": "sofá",
+                "potted plant": "planta en maceta",
+                "bed": "cama",
+                "dining table": "mesa de comedor",
+                "toilet": "inodoro",
+                "tv": "televisión",
+                "laptop": "portátil",
+                "mouse": "ratón",
+                "remote": "mando a distancia",
+                "keyboard": "teclado",
+                "cell phone": "teléfono móvil",
+                "microwave": "microondas",
+                "oven": "horno",
+                "toaster": "tostadora",
+                "sink": "fregadero",
+                "refrigerator": "refrigerador",
+                "book": "libro",
+                "clock": "reloj",
+                "vase": "jarrón",
+                "scissors": "tijeras",
+                "teddy bear": "oso de peluche",
+                "hair drier": "secador de pelo",
+                "toothbrush": "cepillo de dientes",
+            }
 
 
 def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg):
@@ -76,8 +166,15 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
 
     detected_objects = []
 
+# ...
+
+# Choose the appropriate language for the text based on the selected language
+    language = 'es'  # Change the language to 'es' for Spanish
+
+# ...
+
     # Create a black image to display distances
-    distance_image = np.zeros((color_image.shape[0], 200, 3), dtype=np.uint8)  # width of 300px
+    distance_image = np.zeros((color_image.shape[0], 200, 3), dtype=np.uint8)  # width of 200px
 
     text_position_start = 30  # y position to start writing text
 
@@ -108,17 +205,29 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
             "mask": instance_mask
         })
 
-        # Write class name and distance to the distance image
-        text = f"{class_name}: {distance_text}"
+        # Inside the loop, set the text for each object based on the selected language
+        if language == 'en':
+            text = f"{class_name}: {distance_text}"
+        elif language == 'es':
+            translated_class_name = spanish_translations.get(class_name, class_name)
+            print(f"Original class name: {class_name}, Translated class name: {translated_class_name}")
+            text = f"{translated_class_name}: {distance_text}"
+
         cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        text_position_start += 30  # move down by 30px for next text
+        text_position_start += 30  # move down by 30px for the next text
 
+    # Concatenate the images horizontally after the loop
     output_image = out.get_image()[:, :, ::-1]
-
-    # Concatenate images horizontally
     images_concat = np.hstack((distance_image, output_image))
 
+    # ...
+
     cv2.imshow("Distances and Instance Segmentation", images_concat)
+    cv2.waitKey(1)  # Change this value as needed or use cv2.waitKey(0) to wait until any key is pressed
+    #cv2.destroyAllWindows()
+
+    # ...
+
     cv2.waitKey(1)  # Change this value as needed or use cv2.waitKey(0) to wait until any key is pressed
     #cv2.destroyAllWindows()
 

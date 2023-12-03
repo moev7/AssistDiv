@@ -24,6 +24,32 @@ section_width = frame_width // 3
 left_boundary = section_width
 right_boundary = section_width * 2
 
+
+
+# Define language actions
+language_actions = {
+    'en': {
+        'welcome_message': 'Hello, Welcome to Assist Div. Say Scan the scene for scene understanding and Find objects for object detection. Say quit to exit assist div',
+        'scan_scene_message': 'Scanning the scene......',
+        'find_objects_message': 'Finding objects. Please wait.',
+        'beeping_message': 'The selected object is in range. Do you want to start beeping?',
+        'left_side_message': 'The selected object is on the left side.',
+        'right_side_message': 'The selected object is on the right side.',
+        'not_in_frame_message': 'The selected object is not in the frame.',
+        'repeat_message': 'Say repeat to repeat the object names. Say return to do another task. say quit to exit assist div.'
+    },
+    'es': {
+        'welcome_message': 'Hola, bienvenido a Assist Div. Diga Escanear la escena para comprenderla y Buscar objetos para detectar objetos. Diga "salir" para salir',
+        'scan_scene_message': 'Escaneando la escena......',
+        'find_objects_message': 'Buscando objetos. Por favor espera.',
+        'beeping_message': 'El objeto seleccionado está dentro del rango. ¿Quieres comenzar a emitir pitidos?',
+        'left_side_message': 'El objeto seleccionado está en el lado izquierdo.',
+        'right_side_message': 'El objeto seleccionado está en el lado derecho.',
+        'not_in_frame_message': 'El objeto seleccionado no está en el marco.',
+        'repeat_message': 'Di repetir para repetir los nombres de los objetos. Di regresar para hacer otra tarea. diga salir para salir de la división de asistencia.'
+    }
+}
+
 try:
     while True:
         detected_objects = []
@@ -36,18 +62,37 @@ try:
         if not beeping_enabled or not selected_obj_flag: 
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
             
-            speak("Hello, Welcome to Assist Div. Say Scan the scene for scene understanding and Find objects for object detection. Say quit to exit assist div")
-            
-            #user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
-            user_input = get_voice_input()
+            # Language selection
+            speak("Speak English to select English or spanish para español")
+            user_input = 'spanish'#get_voice_input()
             print(user_input)
 
-            if user_input == 'scan the scene':
-                repeat = True
-                detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
-                get_objects_by_position(detected_objects)
+            if user_input == 'english' or user_input == 'inglés':
+                language = 'en'
+                speak(language_actions[language]['welcome_message'], language)
+            elif user_input == 'spanish' or user_input == 'español':
+                language = 'es'
+                speak(language_actions[language]['welcome_message'], language)
+            elif user_input == 'quit' or user_input == 'salir':
+                exit()
+            
+            #user_input = input("Select 'u' for scene understanding and 'o' for object detection: ")
+            user_input = 'escanear la escena'#get_voice_input()
+            print(user_input)
 
-                while repeat == True:
+            if user_input == 'scan the scene' or user_input == 'escanear la escena':
+                if user_input == 'english' or user_input == 'inglés':
+                    language = 'en'
+                    speak(language_actions[language]['scan_scene_message'], language)
+                elif user_input == 'spanish' or user_input == 'español':
+                    language = 'es'
+                    speak(language_actions[language]['scan_scene_message'], language)
+
+            repeat = True
+            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
+            get_objects_by_position(detected_objects)
+
+            while repeat == True:
                     speak("Say repeat to repeat the object names. Say return to do another task. say quit to exit assist div.")
                     user_input = get_voice_input()
                     print(user_input)
