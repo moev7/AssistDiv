@@ -47,9 +47,39 @@ language_actions = {
     }
 }
 
+def select_language():
+    speak("Speak English to select English or Spanish para español")
+    user_input = 'spanish'#get_voice_input()
+
+    if user_input:
+        user_input_lower = user_input.lower()
+
+        if user_input_lower == 'english' or user_input_lower == 'inglés':
+            return 'en'
+        elif user_input_lower == 'spanish' or user_input_lower == 'español':
+            return 'es'
+        elif user_input_lower == 'quit' or user_input_lower == 'salir':
+            exit()
+
+    print("Invalid selection. Please try again.")
+    return select_language()  # Recursive call to get a valid language selection
+
+
+def describe_scene(detected_objects, language, mode='general'):
+    if mode == 'detailed':
+        get_objects_by_position_categorized(detected_objects, language)
+    elif mode == 'general':
+        categories = set(obj['category'] for obj in detected_objects)
+        speak(f"The detected categories in the scene are: {', '.join(categories)}", language)
+
+
+
 try:
     while True:
         detected_objects = []
+
+        # Language selection
+        language = select_language()
 
         # Get camera frames
         depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
@@ -58,41 +88,39 @@ try:
         if not beeping_enabled or not selected_obj_flag:
             #detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
 
-            # Language selection
-            speak("Speak English to select English or Spanish para español")
-            user_input = 'spanish'#get_voice_input()
+            speak(language_actions[language]['welcome_message'], language)
+
+            # Other code for language selection
+            user_input = 'escanear'#get_voice_input()
             print(user_input)
 
-            if user_input == 'english' or user_input == 'inglés':
-                language = 'en'
-                speak(language_actions[language]['welcome_message'], language)
-            elif user_input == 'spanish' or user_input == 'español':
-                language = 'es'
-                speak(language_actions[language]['welcome_message'], language)
-            elif user_input == 'quit' or user_input == 'salir':
-                exit()
+            if user_input == 'scan the scene' or user_input == 'escanear':
+                speak("Say 'detailed' for detailed description or 'general' for general description of the scene.", language)
 
-            user_input = 'escanear la escena'#get_voice_input()
-            print(user_input)
+                user_input = 'general'#get_voice_input().lower()
+                print(user_input)
 
-            if user_input == 'scan the scene' or user_input == 'escanear la escena':
-                if user_input == 'english' or user_input == 'inglés':
-                    language = 'en'
+                if user_input == 'detailed':
                     speak(language_actions[language]['scan_scene_message'], language)
-                elif user_input == 'spanish' or user_input == 'español':
-                    language = 'es'
+                    detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
+                    describe_scene(detected_objects, language, mode='detailed')
+                elif user_input == 'general':
                     speak(language_actions[language]['scan_scene_message'], language)
+                    detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
+                    describe_scene(detected_objects, language, mode='general')
+                else:
+                    speak("Invalid selection. Please try again.", language)
+
+            # Other code for language selection
 
             repeat = True
-            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
-            get_objects_by_position(detected_objects, language)
 
             while repeat:
-                speak("Say repeat to repeat the object names. Say return to do another task. Say quit to exit Assist Div.", language)
-                user_input = get_voice_input()
+                speak(language_actions[language]['repeat_message'], language)
+                user_input = get_voice_input().lower()
                 print(user_input)
                 if user_input == 'repeat':
-                    get_objects_by_position_categorized(detected_objects, language)
+                    describe_scene(detected_objects, language, mode='detailed')
                 elif user_input == "return":
                     repeat = False
                 elif user_input == 'quit':
@@ -108,7 +136,7 @@ try:
                 print(user_input)
 
                 if user_input == 'select':
-                    selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image, 640)
+                    selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image, 1280)
                     selected_obj_flag = True
                 elif user_input == 'start beeping':
                     beeping_enabled = True
@@ -152,4 +180,4 @@ try:
             break
 
 finally:
-    pipeline.stop
+    pipeline.stop()

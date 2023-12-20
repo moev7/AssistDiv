@@ -1,3 +1,5 @@
+# detectron_utils.py
+
 from detectron2.config import get_cfg
 from detectron2.data import MetadataCatalog
 from detectron2.engine import DefaultPredictor
@@ -5,7 +7,7 @@ from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2 import model_zoo
 import cv2
 import numpy as np
-from speech_utils import speak, announce_objects, get_voice_input
+from speech_utils import speak
 from translations import LANGUAGE
 
 
@@ -29,7 +31,7 @@ def get_objects_by_position(detected_objects, language='en'):
     front_objects = []
     right_objects = []
 
-    image_width = 640
+    image_width = 1280
 
     left_threshold = image_width // 3
     right_threshold = (2 * image_width) // 3
@@ -75,7 +77,11 @@ def run_object_detection(predictor, color_image):
     return outputs
 
 
-def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language='en'):
+
+
+def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg):
+    from main import select_language
+    language = select_language()
     outputs = run_object_detection(predictor, color_image)
     v = Visualizer(color_image[:, :, ::-1], metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), instance_mode=ColorMode.IMAGE)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
@@ -87,11 +93,13 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
 
     categorized_objects = {category: [] for category in LANGUAGE[language].keys()}
 
+    # Iterate over detected objects and categorize them
     for i, (class_idx, mask, box) in enumerate(zip(outputs["instances"].pred_classes.to("cpu"), outputs["instances"].pred_masks.to("cpu"), outputs["instances"].pred_boxes.tensor)):
         instance_mask = mask.cpu().numpy().astype(np.uint8)
         masked_depth_image = depth_image.copy() * instance_mask
         distances = masked_depth_image[np.nonzero(masked_depth_image)]
 
+        # Calculate the mean distance of the object
         if len(distances) > 0:
             mean_distance = np.mean(distances) / 1000
         else:
@@ -120,32 +128,40 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
                 categorized_objects[category].append(detected_object)
                 break
 
+    # Display and speak Objects by Category and Position after processing all objects
     for category, objects in categorized_objects.items():
         if objects:
             speak(f"Category: {category}", language)
-            for i, obj in enumerate(objects, start=1):
-                # If there is more than one object in the category, add numeration
-                numeration = f"-{i}" if len(objects) > 1 else ""
-                speak(f"{i} - {category}{numeration}: {LANGUAGE[language].get(obj['name'], obj['name'])} at {obj['distance']:.1f} meters", language)
 
-    for category, objects in categorized_objects.items():
+        # Print Objects by Category
         for i, obj in enumerate(objects, start=1):
-            # If there is more than one object in the category, add numeration
+            numeration = f"-{i}" if len(objects) > 1 else ""
+            speak(f"{category}{numeration}: {LANGUAGE[language].get(obj['name'], obj['name'])} at {obj['distance']:.1f} meters", language)
+
+        # Display the image while printing Objects by Category
+        output_image = out.get_image()[:, :, ::-1]
+        images_concat = np.hstack((distance_image, output_image))
+        cv2.imshow("Distances and Instance Segmentation", images_concat)
+        cv2.waitKey(1)
+
+        # Print Objects by Position
+        for i, obj in enumerate(objects, start=1):
             numeration = f"-{i}" if len(objects) > 1 else ""
             text = f"{category}{numeration}: {LANGUAGE[language].get(obj['name'], obj['name'])} at {obj['distance']:.1f} m"
             cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             text_position_start += 30
 
-    output_image = out.get_image()[:, :, ::-1]
-    images_concat = np.hstack((distance_image, output_image))
+        # Display the image while printing Objects by Position
+        output_image = out.get_image()[:, :, ::-1]
+        images_concat = np.hstack((distance_image, output_image))
+        cv2.imshow("Distances and Instance Segmentation", images_concat)
+        cv2.waitKey(1)
 
-    cv2.imshow("Distances and Instance Segmentation", images_concat)
-    cv2.waitKey(1)
-
+    # Sort detected objects based on the x-coordinate of the centroid
     detected_objects.sort(key=lambda obj: obj['centroid'][0])
 
+    # Return the sorted detected objects
     return detected_objects
-
 
 
 
@@ -161,15 +177,24 @@ def initialize_detectron():
 
 # Main execution
 predictor, cfg = initialize_detectron()
-color_image = np.zeros((480, 640, 3), dtype=np.uint8)  # Replace with your actual color image
-depth_image = np.zeros((480, 640), dtype=np.uint16)  # Replace with your actual depth image
+
+# Set the desired width for your frame
+desired_frame_width = 1280  # Change this value to the width you want
+desired_frame_height = 680  # Change this value to the height you want
+
+color_image = np.zeros((desired_frame_height, desired_frame_width, 3), dtype=np.uint8)  # Replace with your actual color image
+depth_image = np.zeros((desired_frame_height, desired_frame_width), dtype=np.uint16) 
+
 
 # Example: English
-language = 'en'
-detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language)
-get_objects_by_position_categorized(detected_objects, language)
+language = 'en'  # Define the language variable
+if language == 'en':  # Use '==' for comparison
+    detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
+    get_objects_by_position_categorized(detected_objects, language)
+    get_objects_by_position(detected_objects, language)
 
 # Example: Spanish
-language = 'es'
-detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language)
-get_objects_by_position_categorized(detected_objects, language)
+elif language == 'es':  # Use '==' for comparison
+    detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
+    get_objects_by_position_categorized(detected_objects, language)
+    get_objects_by_position(detected_objects, language)
