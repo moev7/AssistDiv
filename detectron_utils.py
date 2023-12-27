@@ -142,7 +142,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
         output_image = out.get_image()[:, :, ::-1]
         images_concat = np.hstack((distance_image, output_image))
         cv2.imshow("Distances and Instance Segmentation", images_concat)
-        cv2.waitKey(1)
+        cv2.waitKey(0)
 
         # Print Objects by Position
         for i, obj in enumerate(objects, start=1):

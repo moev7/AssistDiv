@@ -4,6 +4,7 @@ from sound_utils import play_beep_sound, play_obstacle_beep_sound
 from speech_utils import speak, announce_objects, get_voice_input
 from relationship_utils import describe_relationship
 from distance_utils import get_object_distance, get_updated_distance
+from language_actions import language_actions
 import time
 import cv2
 import numpy as np
@@ -23,29 +24,6 @@ section_width = frame_width // 3
 left_boundary = section_width
 right_boundary = section_width * 2
 
-# Define language actions
-language_actions = {
-    'en': {
-        'welcome_message': 'Hello, Welcome to Assist Div. Say "Scan the scene" for scene understanding and "Find objects" for object detection. Say "quit" to exit Assist Div.',
-        'scan_scene_message': 'Scanning the scene...',
-        'find_objects_message': 'Finding objects. Please wait.',
-        'beeping_message': 'The selected object is in range. Do you want to start beeping?',
-        'left_side_message': 'The selected object is on the left side.',
-        'right_side_message': 'The selected object is on the right side.',
-        'not_in_frame_message': 'The selected object is not in the frame.',
-        'repeat_message': 'Say "repeat" to repeat the object names. Say "return" to do another task. Say "quit" to exit Assist Div.'
-    },
-    'es': {
-        'welcome_message': 'Hola, bienvenido a Assist Div. Diga "Escanear la escena" para comprenderla y "Buscar objetos" para detectar objetos. Diga "salir" para salir.',
-        'scan_scene_message': 'Escaneando la escena...',
-        'find_objects_message': 'Buscando objetos. Por favor, espera.',
-        'beeping_message': 'El objeto seleccionado está dentro del rango. ¿Quieres comenzar a emitir pitidos?',
-        'left_side_message': 'El objeto seleccionado está en el lado izquierdo.',
-        'right_side_message': 'El objeto seleccionado está en el lado derecho.',
-        'not_in_frame_message': 'El objeto seleccionado no está en el marco.',
-        'repeat_message': 'Diga "repetir" para repetir los nombres de los objetos. Diga "regresar" para hacer otra tarea. Diga "salir" para salir de la división de asistencia.'
-    }
-}
 
 def select_language():
     speak("Speak English to select English or Spanish para español")
@@ -69,10 +47,11 @@ def describe_scene(detected_objects, language, mode='general'):
     if mode == 'detailed':
         get_objects_by_position_categorized(detected_objects, language)
     elif mode == 'general':
-        categories = set(obj['category'] for obj in detected_objects)
-        speak(f"The detected categories in the scene are: {', '.join(categories)}", language)
-
-
+        if detected_objects and 'category' in detected_objects[0]:
+            categories = set(obj['category'] for obj in detected_objects)
+            speak(f"The detected categories in the scene are: {', '.join(categories)}", language)
+        else:
+            speak("No categories detected in the scene.", language)
 
 try:
     while True:
@@ -111,7 +90,7 @@ try:
                 else:
                     speak("Invalid selection. Please try again.", language)
 
-            # Other code for language selection
+
 
             repeat = True
 
@@ -126,7 +105,7 @@ try:
                 elif user_input == 'quit':
                     break
 
-            if user_input == 'find objects':
+            if user_input == 'find objects' or user_input == 'buscar objetos':
                 detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
 
                 speak("Select one of the following objects to find where it's placed:", language)

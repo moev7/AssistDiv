@@ -1,7 +1,10 @@
+from vosk import Model, KaldiRecognizer
 from gtts import gTTS
 import os
 import tempfile
 import speech_recognition as sr
+import requests
+import json
 
 
 def speak(text, language='en', slow=False):
@@ -12,6 +15,7 @@ def speak(text, language='en', slow=False):
         tts.save(temp_file)
         os.system(f"mpg123 {temp_file}")
 
+
 def announce_objects(detected_objects):
     if not detected_objects:
         speak("No objects detected.")
@@ -21,14 +25,28 @@ def announce_objects(detected_objects):
         for obj in detected_objects:
             speak(f"{obj['name']} at {obj['distance']:.2f} meters.")
 
+
 def get_voice_input():
     r = sr.Recognizer()
+    model = Model(json.loads(requests.get("https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip").content))
+    recognizer = KaldiRecognizer(model, 16000)
+
     with sr.Microphone() as source:
         print("Listening...")
         audio = r.listen(source)
         try:
-            text = r.recognize_google(audio).lower()  # Using Google's voice recognition
-            return text
-        except:
+            # Use Vosk for speech recognition
+            text = r.recognize_vosk(audio, recognizer)
+            return text.lower()
+        except sr.UnknownValueError:
             speak("Sorry, I did not understand that. Please try again.")
             return None
+        except sr.RequestError as e:
+            print(f"Could not request results from Vosk service; {e}")
+            return None
+
+
+# Example usage:
+# text_input = get_voice_input()
+# if text_input:
+#     print(f"Recognized text: {text_input}")
