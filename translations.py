@@ -162,6 +162,36 @@ LANGUAGE: Dict[str, Dict[str, str]] = {
         "tijeras": "tijeras",
         "osito de peluche": "osito de peluche",
         "secador de pelo": "secador de pelo",
-        "cepillo de dientes": "cepillo de dientes"
+        "cepillo de dientes": "cepillo de dientes",
+        "laptop": "portatil",
     }
 }
+
+
+
+
+
+# # translations.py
+
+# LANGUAGE = {
+#     "en": {
+#         "Personas": ["Person: person"],
+#         "Vehicles": ["Vehicle: bicycle", "Vehicle: car", "Vehicle: motorcycle", "Vehicle: airplane", "Vehicle: bus", "Vehicle: train", "Vehicle: truck", "Vehicle: boat"],
+#         "Signals and Urban Objects": ["Signal/Object: traffic light", "Signal/Object: fire hydrant", "Signal/Object: stop sign", "Signal/Object: parking meter", "Urban Object: bench"],
+#         "Animals": ["Animal: bird", "Animal: cat", "Animal: dog", "Animal: horse", "Animal: sheep", "Animal: cow", "Animal: elephant", "Animal: bear", "Animal: zebra", "Animal: giraffe"],
+#         "Sports Items": ["Item: backpack", "Item: umbrella", "Item: handbag", "Item: tie", "Item: suitcase", "Item: frisbee", "Item: skis", "Item: snowboard", "Item: sports ball", "Item: kite", "Item: baseball bat", "Item: baseball glove", "Item: skateboard", "Item: surfboard", "Item: tennis racket"],
+#         "Food and Drink": ["Food/Drink: bottle", "Food/Drink: wine glass", "Food/Drink: cup", "Utensil: fork", "Utensil: knife", "Utensil: spoon", "Container: bowl", "Food: banana", "Food: apple", "Food: sandwich", "Food: orange", "Food: broccoli", "Food: carrot", "Food: hot dog", "Food: pizza", "Food: donut", "Food: cake"],
+#         "Furniture and Appliances": ["Furniture: chair", "Furniture: couch", "Plant: potted plant", "Furniture: bed", "Furniture: dining table", "Fixture: toilet", "Electronic: tv", "Electronic: laptop", "Electronic: mouse", "Electronic: remote", "Electronic: keyboard", "Electronic: cell phone", "Appliance: microwave", "Appliance: oven", "Appliance: toaster", "Fixture: sink", "Appliance: refrigerator"],
+#         "Miscellaneous Items": ["Item: book", "Item: clock", "Item: vase", "Tool: scissors", "Toy: teddy bear", "Appliance: hair drier", "Personal Care Item: toothbrush"]
+#     },
+#     "es": {
+#         "Personas": ["Persona: persona"],
+#         "Vehicles": ["Vehículo: bicicleta", "Vehículo: coche", "Vehículo: motocicleta", "Vehículo: avión", "Vehículo: autobús", "Vehículo: tren", "Vehículo: camión", "Vehículo: barco"],
+#         "Signals and Urban Objects": ["Señal/Objeto: semáforo", "Señal/Objeto: hidrante", "Señal/Objeto: señal de stop", "Señal/Objeto: parquímetro", "Objeto Urbano: banco"],
+#         "Animals": ["Animal: pájaro", "Animal: gato", "Animal: perro", "Animal: caballo", "Animal: oveja", "Animal: vaca", "Animal: elefante", "Animal: oso", "Animal: cebra", "Animal: jirafa"],
+#         "Sports Items": ["Objeto: mochila", "Objeto: paraguas", "Objeto: bolso", "Objeto: corbata", "Objeto: maleta", "Objeto: frisbee", "Objeto: esquís", "Objeto: tabla de snowboard", "Objeto: pelota deportiva", "Objeto: cometa", "Objeto: bate de béisbol", "Objeto: guante de béisbol", "Objeto: monopatín", "Objeto: tabla de surf", "Objeto: raqueta de tenis"],
+#         "Food and Drink": ["Comida/Bebida: botella", "Comida/Bebida: copa de vino", "Comida/Bebida: taza", "Utensilio: tenedor", "Utensilio: cuchillo", "Utensilio: cuchara", "Contenedor: tazón", "Comida: plátano", "Comida: manzana", "Comida: sándwich", "Comida: naranja", "Comida: brócoli", "Comida: zanahoria", "Comida: perrito caliente", "Comida: pizza", "Comida: dona", "Comida: pastel"],
+#         "Furniture and Appliances": ["Mueble: silla", "Mueble: sofá", "Planta: planta en maceta", "Mueble: cama", "Mueble: mesa de comedor", "Elemento: inodoro", "Electrónico: televisión", "Electrónico: computadora portátil", "Electrónico: ratón de computadora", "Electrónico: control remoto", "Electrónico: teclado", "Electrónico: teléfono celular", "Electrodoméstico: microondas", "Electrodoméstico: horno", "Electrodoméstico: tostadora", "Elemento: fregadero", "Electrodoméstico: refrigerador"],
+#         "Miscellaneous Items": ["Objeto: libro", "Objeto: reloj", "Objeto: jarrón", "Herramienta: tijeras", "Juguete: osito de peluche", "Electrodoméstico: secador de pelo", "Artículo de cuidado personal: cepillo de dientes"]
+#     }
+# }

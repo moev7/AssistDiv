@@ -11,7 +11,7 @@ from speech_utils import speak
 from translations import LANGUAGE
 
 
-def get_objects_by_position_categorized(detected_objects, language='en'):
+def get_objects_by_position_categorized(detected_objects, language):
     categorized_objects = {category: [] for category in LANGUAGE[language].keys()}
 
     for obj in detected_objects:
@@ -79,16 +79,14 @@ def run_object_detection(predictor, color_image):
 
 
 
-def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg):
-    from main import select_language
-    language = select_language()
+def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language='en'):
     outputs = run_object_detection(predictor, color_image)
     v = Visualizer(color_image[:, :, ::-1], metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), instance_mode=ColorMode.IMAGE)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
 
     detected_objects = []
 
-    distance_image = np.zeros((color_image.shape[0], 200, 3), dtype=np.uint8)
+    distance_image = np.zeros((color_image.shape[0], 400, 3), dtype=np.uint8)
     text_position_start = 30
 
     categorized_objects = {category: [] for category in LANGUAGE[language].keys()}
@@ -106,7 +104,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
             mean_distance = 0
 
         class_name = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]
-        translated_class_name = LANGUAGE[language].get(class_name, class_name)
+        # class_name = LANGUAGE[language].get(class_name, class_name)
 
         y, x = np.nonzero(instance_mask)
         x_center, y_center = int(np.mean(x)), int(np.mean(y))
@@ -115,7 +113,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
 
         detected_object = {
             "id": i,
-            "name": translated_class_name,
+            "name": class_name,
             "distance": mean_distance,
             "centroid": centroid,
             "box": box,
@@ -137,12 +135,6 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg)
         for i, obj in enumerate(objects, start=1):
             numeration = f"-{i}" if len(objects) > 1 else ""
             speak(f"{category}{numeration}: {LANGUAGE[language].get(obj['name'], obj['name'])} at {obj['distance']:.1f} meters", language)
-
-        # Display the image while printing Objects by Category
-        output_image = out.get_image()[:, :, ::-1]
-        images_concat = np.hstack((distance_image, output_image))
-        cv2.imshow("Distances and Instance Segmentation", images_concat)
-        cv2.waitKey(0)
 
         # Print Objects by Position
         for i, obj in enumerate(objects, start=1):

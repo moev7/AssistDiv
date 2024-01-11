@@ -1,11 +1,8 @@
-from vosk import Model, KaldiRecognizer
+import time
 from gtts import gTTS
 import os
 import tempfile
 import speech_recognition as sr
-import requests
-import json
-
 
 def speak(text, language='en', slow=False):
     tts = gTTS(text=text, lang=language, slow=slow)
@@ -14,7 +11,6 @@ def speak(text, language='en', slow=False):
         temp_file = fp.name + ".mp3"
         tts.save(temp_file)
         os.system(f"mpg123 {temp_file}")
-
 
 def announce_objects(detected_objects):
     if not detected_objects:
@@ -25,28 +21,78 @@ def announce_objects(detected_objects):
         for obj in detected_objects:
             speak(f"{obj['name']} at {obj['distance']:.2f} meters.")
 
+def get_voice_input(language='en'):
+    max_attempts = 3  # Set the maximum number of attempts
+    for attempt in range(1, max_attempts + 1):
+        print(f"Attempt {attempt}: Please speak within 5 seconds.")
+        r = sr.Recognizer()
+        with sr.Microphone() as source:
+            print("listening...")
+            audio = r.listen(source, timeout=5, phrase_time_limit=5)
+            try:
+                text = r.recognize_google(audio, language=language).lower()  # Using Google's voice recognition with specified language
+                return text
+            except sr.UnknownValueError:
+                speak("Sorry, I did not understand that. Please try again.")
+            except sr.RequestError as e:
+                speak(f"Could not request results from Google Speech Recognition service; {e}")
+                return None
+        time.sleep(1)  # Wait for a second before the next attempt
+    speak(f"Exceeded maximum attempts. Exiting.")
+    return None
 
-def get_voice_input():
-    r = sr.Recognizer()
-    model = Model(json.loads(requests.get("https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip").content))
-    recognizer = KaldiRecognizer(model, 16000)
+# from gtts import gTTS
+# import json
+# import os
+# import tempfile
+# from vosk import Model, KaldiRecognizer
+# import pyaudio
 
-    with sr.Microphone() as source:
-        print("Listening...")
-        audio = r.listen(source)
-        try:
-            # Use Vosk for speech recognition
-            text = r.recognize_vosk(audio, recognizer)
-            return text.lower()
-        except sr.UnknownValueError:
-            speak("Sorry, I did not understand that. Please try again.")
-            return None
-        except sr.RequestError as e:
-            print(f"Could not request results from Vosk service; {e}")
-            return None
+# def speak(text, language='en', slow=False):
+#     tts = gTTS(text=text, lang=language, slow=slow)
+    
+#     with tempfile.NamedTemporaryFile(delete=True) as fp:
+#         temp_file = fp.name + ".mp3"
+#         tts.save(temp_file)
+#         os.system(f"mpg123 {temp_file}")
 
+# def announce_objects(detected_objects):
+#     if not detected_objects:
+#         speak("No objects detected.")
+#     else:
+#         obj_count = len(detected_objects)
+#         speak(f"Detected {obj_count} objects.")
+#         for obj in detected_objects:
+#             speak(f"{obj['name']} at {obj['distance']:.2f} meters.")
 
-# Example usage:
-# text_input = get_voice_input()
-# if text_input:
-#     print(f"Recognized text: {text_input}")
+# def get_voice_input(language = 'en'):
+#     # Load the Vosk model
+#     script_directory = os.path.dirname(os.path.realpath(__file__))
+#     if language == 'en':
+#         vosk_model_path = os.path.join(script_directory, "vosk-model-small-en-us-0.15")
+#     elif language == 'es':
+#         vosk_model_path = os.path.join(script_directory, "vosk-model-small-es-0.42")
+#     model = Model(vosk_model_path)
+
+#     # Create a recognizer
+#     rec = KaldiRecognizer(model, 16000)  # assuming 16kHz sampling rate
+
+#     # Start listening
+#     p = pyaudio.PyAudio()
+#     stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8000)
+#     stream.start_stream()
+#     print("Listening...")
+
+#     while True:
+#         data = stream.read(4000)
+#         if len(data) == 0:
+#             break
+#         if rec.AcceptWaveform(data):
+#             result = json.loads(rec.Result())
+#             if 'text' in result:
+#                 # print(result['text'])  # print the recognized text
+#                 return result['text']
+
+#     # If nothing was recognized
+#     speak("Sorry, I did not understand that. Please try again.")
+#     return None
