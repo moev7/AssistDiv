@@ -14,29 +14,29 @@ def play_beep():
     pygame.time.wait(int(beep_sound.get_length() * 100)) 
 
 
-def speak(text, language='en', slow=False):
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 100 if slow else 130)  
-    engine.setProperty('volume', 1.0)  # Adjust the volume (0.0 to 1.0)
-
-    voices = engine.getProperty('voices')
-    language_voices = [voice for voice in voices if language in voice.id or language in voice.name]
-    if language_voices:
-        engine.setProperty('voice', language_voices[0].id)
-    else:
-        print(f"No voice found for language: {language}")
-
-    engine.say(text)
-    engine.runAndWait()
-
-
 # def speak(text, language='en', slow=False):
-#     tts = gTTS(text=text, lang=language, slow=slow)
+#     engine = pyttsx3.init()
+#     engine.setProperty('rate', 100 if slow else 130)  
+#     engine.setProperty('volume', 1.0)  # Adjust the volume (0.0 to 1.0)
+
+#     voices = engine.getProperty('voices')
+#     language_voices = [voice for voice in voices if language in voice.id or language in voice.name]
+#     if language_voices:
+#         engine.setProperty('voice', language_voices[0].id)
+#     else:
+#         print(f"No voice found for language: {language}")
+
+#     engine.say(text)
+#     engine.runAndWait()
+
+
+def speak(text, language='en', slow=False):
+    tts = gTTS(text=text, lang=language, slow=slow)
     
-#     with tempfile.NamedTemporaryFile(delete=True) as fp:
-#         temp_file = fp.name + ".mp3"
-#         tts.save(temp_file)
-#         os.system(f"mpg123 {temp_file}")
+    with tempfile.NamedTemporaryFile(delete=True) as fp:
+        temp_file = fp.name + ".mp3"
+        tts.save(temp_file)
+        os.system(f"mpg123 {temp_file}")
 
 def announce_objects(detected_objects):
     if not detected_objects:
@@ -56,7 +56,7 @@ def get_voice_input(language = 'en'):
         vosk_model_path = os.path.join(script_directory, "vosk-model-small-es-0.42")
     model = Model(vosk_model_path)
 
-    play_beep()
+    # play_beep()
 
 
     # Create a recognizer

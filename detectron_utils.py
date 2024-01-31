@@ -12,27 +12,17 @@ import numpy as np
 from speech_utils import speak
 
 def translate_object_name(detected_object, language):
-    translation_dict = LANGUAGE_EN if language == "en" else LANGUAGE_ES
+    if language == "en":
+        translation_dict = LANGUAGE_EN 
+    elif language == "es":
+        translation_dict = LANGUAGE_ES
+
     
     for category, objects in translation_dict.items():
         if detected_object['name'] in objects:
             return category, detected_object['name']
     
     return detected_object['name'], None
-
-
-
-# def translate_object_name(detected_object, language):
-#     translation_dict = LANGUAGE_EN if language == "en" else LANGUAGE_ES
-#     print(f"Translation dictionary for {language}: {translation_dict}")  # Print the dictionary for debugging
-    
-#     for category, objects in translation_dict.items():
-#         if detected_object['name'] in objects:
-#             return category, objects
-    
-#     print(f"Object {detected_object['name']} not found in dictionary")  # Print a message if object not found
-#     return detected_object['name'], None
-
 
 def get_objects_by_position(detected_objects, language):
     left_objects = []
@@ -105,27 +95,13 @@ def get_objects_by_position(detected_objects, language):
                 speak(f"{obj['name']} a {obj['distance']} metros", language)
 
 
-
-# def get_categories(detected_objects, language):
-#     translation_dict = LANGUAGE_EN if language == "en" else LANGUAGE_ES
-#     detected_categories = set()
-
-#     for obj in detected_objects:
-#         for category, objects in translation_dict.items():
-#             if obj['name'] in objects:
-#                 detected_categories.add(category)
-
-#     for category in detected_categories:
-#         speak(f"Category: {category}", language)
-
-
 def run_object_detection(predictor, color_image):
     outputs = predictor(color_image)
     return outputs
 
 
 
-def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language):
+def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail'):
     outputs = run_object_detection(predictor, color_image)
     v = Visualizer(color_image[:, :, ::-1], metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), instance_mode=ColorMode.IMAGE)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
@@ -153,14 +129,13 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
             
         # Use translate_object_name to get the category and translated name
         category, translated_name = translate_object_name({"name": MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]}, language)
-
         if translated_name is None:
             translated_name = "Unknown"
 
+        display_text = f"{category}: {translated_name}"
         distance_text = f"{mean_distance:.2f} m"
                 
         # Concatenate category and translated name for display
-        display_text = f"{category}: {translated_name}"
 
 
 
@@ -178,19 +153,19 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
             "mask": instance_mask
         })
 
-        # if mode == 'detail':
-        #     text = f"{display_text}: {distance_text}"
-        #     speak(text, language)
-        #     cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        #     text_position_start += 30  # move down by 30px for next text
-        # elif mode == 'general':
-        #     text = f"{category}"
-        #     speak(text, language)
-        #     cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        #     text_position_start += 30
-        # else:
-        #     print("Invalid mode")
-        #     return None
+        if mode == 'detail':
+            text = f"{display_text}: {distance_text}"
+            speak(text, language)
+            cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            text_position_start += 30  # move down by 30px for next text
+        elif mode == 'general':
+            text = f"{category}"
+            speak(text, language)
+            cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            text_position_start += 30
+        else:
+            print("Invalid mode")
+            return None
 
         text = f"{display_text}: {distance_text}"
         speak(text, language)
@@ -202,7 +177,6 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
 
     # Concatenate images horizontally
     images_concat = np.hstack((distance_image, output_image))
-
     cv2.imshow("Distances and Instance Segmentation", images_concat)
     cv2.waitKey(1)
 
@@ -210,7 +184,6 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
     detected_objects.sort(key=lambda obj: obj['centroid'][0])
 
     return detected_objects
-
 
 
 def initialize_detectron():
