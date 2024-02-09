@@ -1,16 +1,17 @@
 LANGUAGE_ES = {
-    "Personas": ["persona"],
-    "Vehículos": ["bicicleta", "coche", "motocicleta", "avión", "autobús", "tren", "camión", "barco"],
-    "Señales y Objetos Urbanos": ["semáforo", "boca de incendios", "señal de stop", "parquímetro", "banco"],
-    "Animales": ["pájaro", "gato", "perro", "caballo", "oveja", "vaca", "elefante", "oso", "cebra", "jirafa"],
-    "Artículos Deportivos": ["mochila", "paraguas", "bolso", "corbata", "maleta", "disco volador", "esquís", "snowboard", "pelota deportiva", "cometa", "bate de béisbol", "guante de béisbol", "patineta", "tabla de surf", "raqueta de tenis"],
-    "Comida y Bebida": ["botella", "copa de vino", "taza", "tenedor", "cuchillo", "cuchara", "cuenco", "plátano", "manzana", "sándwich", "naranja", "brócoli", "zanahoria", "hot dog", "pizza", "rosquilla", "pastel"],
-    "Muebles y Electrodomésticos": ["silla", "sofá", "planta en maceta", "cama", "mesa de comedor", "inodoro", "televisor", "laptop", "ratón", "control remoto", "teclado", "teléfono celular", "microondas", "horno", "tostadora", "fregadero", "refrigerador"],
-    "Artículos Variados": ["libro", "reloj", "jarrón", "tijeras", "oso de peluche", "secador de pelo", "cepillo de dientes"]
+    "persona": ["persona"],
+    "vehículo": ["bicicleta", "coche", "motocicleta", "avión", "autobús", "tren", "camión", "barco"],
+    "aire libre": ["semáforo", "boca de incendios", "señal de stop", "parquímetro", "banco"],
+    "animal": ["pájaro", "gato", "perro", "caballo", "oveja", "vaca", "elefante", "oso", "cebra", "jirafa"],
+    "accesorio": ["mochila", "paraguas", "bolso de mano", "corbata", "maleta"],
+    "deportes": ["disco volador", "esquís", "snowboard", "pelota de deporte", "cometa", "bate de béisbol", "guante de béisbol", "patineta", "tabla de surf", "raqueta de tenis"],
+    "cocina": ["botella", "copa de vino", "taza", "tenedor", "cuchillo", "cuchara", "cuenco"],
+    "comida": ["plátano", "manzana", "sándwich", "naranja", "brócoli", "zanahoria", "perrito caliente", "pizza", "dona", "pastel"],
+    "muebles": ["silla", "sofá", "planta en maceta", "cama", "mesa de comedor", "inodoro"],
+    "electrónico": ["televisión", "portátil", "ratón", "control remoto", "teclado", "teléfono celular"],
+    "electrodoméstico": ["microondas", "horno", "tostadora", "fregadero", "nevera"],
+    "interior": ["libro", "reloj", "jarrón", "tijeras", "oso de peluche", "secador de pelo", "cepillo de dientes"]
 }
-
-
-
 
 
 

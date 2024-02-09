@@ -11,18 +11,37 @@ import cv2
 import numpy as np
 from speech_utils import speak
 
-def translate_object_name(detected_object, language):
-    if language == "en":
-        translation_dict = LANGUAGE_EN 
-    elif language == "es":
-        translation_dict = LANGUAGE_ES
+def translate_object_name(object_name, language):
+    translated_category = None
+    translated_name = None
 
+    if language == 'es':
+        for category, objects in LANGUAGE_ES.items():
+            if object_name in objects:
+                translated_category = category
+                translated_name = object_name
+                break
+    else:
+        for category, objects in LANGUAGE_EN.items():
+            if object_name in objects:
+                translated_category = category
+                translated_name = object_name
+                break
+
+    return translated_category, translated_name
+
+
+
+# def translate_object_name(detected_object, language):
+#     if language == "en":
+#         translation_dict = LANGUAGE_EN 
+#     elif language == "es":
+#         translation_dict = LANGUAGE_ES
+
+#     for category, objects in translation_dict.items():
+#         if detected_object['name'] in objects:
+#             return category, detected_object['name']
     
-    for category, objects in translation_dict.items():
-        if detected_object['name'] in objects:
-            return category, detected_object['name']
-    
-    return detected_object['name'], None
 
 def get_objects_by_position(detected_objects, language):
     left_objects = []
@@ -101,7 +120,7 @@ def run_object_detection(predictor, color_image):
 
 
 
-def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail'):
+def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode=''):
     outputs = run_object_detection(predictor, color_image)
     v = Visualizer(color_image[:, :, ::-1], metadata=MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), instance_mode=ColorMode.IMAGE)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
@@ -122,22 +141,30 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         else:
             mean_distance = 0
 
-        # distance_text = f"{mean_distance:.2f} m"
-        # class_name = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]
-        # translated_name = translate_object_name(class_name, language)
+        # Get the category and translated name
+        # category, translated_name = translate_object_name (MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx], language)
+        # class_name = LANGUAGE[language].get(class_name, class_name)
             
-            
-        # Use translate_object_name to get the category and translated name
-        category, translated_name = translate_object_name({"name": MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]}, language)
+
+
+        object_name = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]
+        category, translated_name = translate_object_name(object_name, language)
         if translated_name is None:
             translated_name = "Unknown"
 
+
+        # # Use translate_object_name to get the category and translated name
+        # category, translated_name = translate_object_name({"name": MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]}, language)
+        # if translated_name is None:
+        #     translated_name = "Unknown"
+
+        #enumerate the detected objects
         display_text = f"{category}: {translated_name}"
         distance_text = f"{mean_distance:.2f} m"
-                
-        # Concatenate category and translated name for display
 
 
+        # display_text = f"{category}: {translated_name}"
+        # distance_text = f"{mean_distance:.2f} m"
 
         y, x = np.nonzero(instance_mask)
         x_center, y_center = int(np.mean(x)), int(np.mean(y))
@@ -154,12 +181,13 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         })
 
         if mode == 'detail':
-            text = f"{display_text}: {distance_text}"
+            text = f"{translated_name}: {distance_text}"
             speak(text, language)
             cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             text_position_start += 30  # move down by 30px for next text
         elif mode == 'general':
-            text = f"{category}"
+            distinct_objects = set(category)  # Get distinct objects from the category list
+            text = f"{(category)}"
             speak(text, language)
             cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             text_position_start += 30
@@ -167,23 +195,24 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
             print("Invalid mode")
             return None
 
-        text = f"{display_text}: {distance_text}"
-        speak(text, language)
-        cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        text_position_start += 30  # move down by 30px for next text
-
+        # text = f"{display_text}: {distance_text}"
+        # cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        # text_position_start += 30  # move down by 30px for next text
 
     output_image = out.get_image()[:, :, ::-1]
 
     # Concatenate images horizontally
     images_concat = np.hstack((distance_image, output_image))
     cv2.imshow("Distances and Instance Segmentation", images_concat)
-    cv2.waitKey(1)
+    cv2.waitKey(0)
 
     # Sort detected_objects based on the x-coordinate of centroids
     detected_objects.sort(key=lambda obj: obj['centroid'][0])
 
     return detected_objects
+    # cv2.destroyAllWindows()
+
+
 
 
 def initialize_detectron():

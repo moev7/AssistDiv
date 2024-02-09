@@ -1,13 +1,16 @@
-
 LANGUAGE_EN = {
-    "Persons": ["person"],
-    "Vehicles": ["bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat"],
-    "Signal and Urban Objects": ["traffic light", "fire hydrant", "stop sign", "parking meter", "bench"],
-    "Animals": ["bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe"],
-    "Sports": ["backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket"],
-    "Food and Drink": ["bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake"],
-    "Furniture and electronics": ["chair", "couch", "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator"],
-    "Misc": ["book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
+    "person": ["person"],
+    "vehicle": ["bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat"],
+    "outdoor": ["traffic light", "fire hydrant", "stop sign", "parking meter", "bench"],
+    "animal": ["bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe"],
+    "accessory": ["backpack", "umbrella", "handbag", "tie", "suitcase"],
+    "sports": ["frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket"],
+    "kitchen": ["bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl"],
+    "food": ["banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake"],
+    "furniture": ["chair", "couch", "potted plant", "bed", "dining table", "toilet"],
+    "electronic": ["tv", "laptop", "mouse", "remote", "keyboard", "cell phone"],
+    "appliance": ["microwave", "oven", "toaster", "sink", "refrigerator"],
+    "indoor": ["book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
 }
 
 

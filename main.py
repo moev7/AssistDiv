@@ -1,7 +1,7 @@
 from camera_utils import initialize_camera, get_camera_frames
 from detectron_utils import initialize_detectron, run_object_detection, visualize_and_get_detected_objects, get_objects_by_position
 from sound_utils import play_beep_sound, play_obstacle_beep_sound
-from speech_utils import speak, announce_objects, get_voice_input
+from speech_utils import speak, announce_objects, get_voice_input, play_beep
 from relationship_utils import describe_relationship
 from language_actions import language_actions
 from distance_utils import get_object_distance, get_updated_distance
@@ -47,17 +47,22 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
     if not beeping_enabled or not selected_obj_flag:
         if user_input == 'scan' or user_input == 'escanear':
             repeat = True
+            scene_scan = True
             # detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language)
-            speak(language_actions[language]['select_category_message'],language)
-            mode = get_user_input(language)
-            print(mode)
-            if mode == 'general':
-                    detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode)
-            elif mode == 'detail':
-                detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode)
-            else:
-                speak("Invalid category selection", language)
-                                        
+            while scene_scan == True:
+                speak(language_actions[language]['select_category_message'],language)
+                mode = get_user_input(language)
+                print(mode)
+                if mode == 'general':
+                    detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='general')
+                    scene_scan = False
+                elif mode == 'detail' or mode == 'detalles':
+                    detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
+                    scene_scan = False
+                else:
+                    speak("Invalid", language)
+                    continue
+                                           
             while repeat:
                 speak(language_actions[language]['repeat_message'], language)
                 user_input = get_user_input(language)
@@ -67,11 +72,11 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
                 elif user_input == "return" or user_input == 'regresar':
                     return
                 elif user_input == 'exit' or user_input == 'salir':
-                    break
+                    return 'exit'
 
 
         elif user_input == 'find objects' or user_input == 'buscar objetos':
-            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode)
+            # detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
             get_objects_by_position(detected_objects, language)
             #speak("Select one of the following objects to find where it's placed:", language)
 
@@ -81,37 +86,20 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
             speak(language_actions[language]['select_object'], language)
             user_input = get_voice_input(language)
             print(user_input)
-            if user_input == 'exit' or user_input == 'salir':
+            if user_input == 'select' or user_input == 'seleccionar':
+                announce_objects = get_object_distance(detected_objects, depth_image, 1280)
+                selected_obj_flag = True
+            elif user_input == 'beep' or user_input == 'pitar':
+                play_beep()
+            elif user_input == 'exit' or user_input == 'salir':
                 return 'exit'
-            elif user_input == 'return' or user_input == 'regresar':
-                return 'return'
-            elif user_input == 'repeat' or user_input == 'repetir':
-                get_objects_by_position(detected_objects, language)
-            else:
-                try:
-                    selected_obj = detected_objects[int(user_input) - 1]
-                    speak(f"Selected object is {selected_obj['name']}.", language)
-                    selected_obj_flag = True
-                    return selected_obj
-                except:
-                    speak("Invalid object selection.", language)
-                    return
-                
-    elif beeping_enabled and selected_obj_flag:
-        if user_input == 'stop beeping' or user_input == 'no pitar':
-            beeping_enabled = False
-            selected_obj_flag = False
-            speak("Beeping stopped.", language)
-        else:
-            speak("Invalid command.", language)
-            return
 
 
 
 try:
     speak("english or spanish?")
     language = select_language()
-    # speak(language_actions[language]['welcome_message'], language)
+    speak(language_actions[language]['welcome_message'], language)
 
 
     while True:

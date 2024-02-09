@@ -10,7 +10,7 @@ language_actions = {
         'not_in_frame_message': 'The selected object is not in the frame.',
         'repeat_message': 'Say "repeat" to repeat the object names. Say "return" to do another task. Say "exit" to exit Assist Div.',
         'select_category_message': 'Say "general" for general category and "detail" for detailed category.',
-        'select_object': 'select one of the following objects to find where it\'s placed or exit to exit Assist Div.'
+        'select_object': 'select one of the following objects to find where it\'s placed or beep or exit to exit Assist Div.'
     },
     'es': {
         'welcome_message': 'Hola, bienvenido a Assist Div. Diga "Escanear" para comprenderla y "Buscar objetos" para detectar objetos. Diga "salir" para salir.',
@@ -22,6 +22,6 @@ language_actions = {
         'not_in_frame_message': 'El objeto seleccionado no está en el marco.',
         'repeat_message': 'Diga "repetir" para repetir los nombres de los objetos. Diga "regresar" para hacer otra tarea. Diga "salir" para salir de la división de asistencia.',
         'select_category_message': 'Diga "general" para la categoría general y "detalle" para la categoría detallada.',
-        'select_object':'Seleccione uno de los siguientes objetos para encontrar dónde está colocado o salir para salir de Assist Div.'
+        'select_object':'Seleccione uno de los siguientes objetos para encontrar dónde está colocado o pitar o salir para salir de Assist Div.'
     }
 }
