@@ -174,26 +174,29 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         detected_objects.append({
             "id": i,
             "name": translated_name,
+            "category": category,
             "distance": mean_distance,
             "centroid": centroid,
             "box": box,
             "mask": instance_mask
         })
 
-        if mode == 'detail':
-            text = f"{translated_name}: {distance_text}"
+    if mode == 'detail':
+        for obj in detected_objects:
+            text = f"{obj['name']}"
             speak(text, language)
             cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             text_position_start += 30  # move down by 30px for next text
-        elif mode == 'general':
-            distinct_objects = set(category)  # Get distinct objects from the category list
-            text = f"{(category)}"
+    elif mode == 'general':
+        distinct_categories = set(obj['category'] for obj in detected_objects)
+        for category in distinct_categories:
+            text = f"{category}"
             speak(text, language)
             cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             text_position_start += 30
-        else:
-            print("Invalid mode")
-            return None
+    else:
+        print("Invalid mode")
+        return None
 
         # text = f"{display_text}: {distance_text}"
         # cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
