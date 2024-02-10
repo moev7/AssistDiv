@@ -56,7 +56,7 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
                 if mode == 'general':
                     detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='general')
                     scene_scan = False
-                elif mode == 'detail' or mode == 'detalles':
+                elif mode == 'detail' or mode == 'detalle':
                     detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
                     scene_scan = False
                 else:

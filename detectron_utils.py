@@ -16,10 +16,11 @@ def translate_object_name(object_name, language):
     translated_name = None
 
     if language == 'es':
-        for category, objects in LANGUAGE_ES.items():
+        for category, objects in LANGUAGE_EN.items():
             if object_name in objects:
-                translated_category = category
-                translated_name = object_name
+                index = objects.index(object_name)
+                translated_category = list(LANGUAGE_ES.keys())[list(LANGUAGE_EN.values()).index(objects)]
+                translated_name = LANGUAGE_ES[translated_category][index]
                 break
     else:
         for category, objects in LANGUAGE_EN.items():
