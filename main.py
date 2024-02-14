@@ -38,6 +38,7 @@ def select_language():
 def get_user_input(language):
     return get_voice_input(language)
 
+
 def process_main_menu(user_input, pipeline, predictor, color_image, depth_image, cfg, language, mode):
     global beeping_enabled
     global selected_obj_flag
@@ -48,7 +49,7 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
         if user_input == 'scan' or user_input == 'escanear':
             repeat = True
             scene_scan = True
-            # detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language)
+            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,  language, mode='')
             while scene_scan == True:
                 speak(language_actions[language]['select_category_message'],language)
                 mode = get_user_input(language)
@@ -76,25 +77,45 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
 
 
         elif user_input == 'find objects' or user_input == 'buscar objetos':
-            # detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
-            get_objects_by_position(detected_objects, language)
-            #speak("Select one of the following objects to find where it's placed:", language)
+            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
+            #get_objects_by_position(detected_objects, language)
 
-            for i, obj in enumerate(detected_objects):
-                speak(f"{i + 1}: {obj['name']}", language)
-            
-            speak(language_actions[language]['select_object'], language)
+            speak(language_actions[language]['select'], language)
             user_input = get_voice_input(language)
             print(user_input)
             if user_input == 'select' or user_input == 'seleccionar':
-                announce_objects = get_object_distance(detected_objects, depth_image, 1280)
+                selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image, 1280)
                 selected_obj_flag = True
-            elif user_input == 'beep' or user_input == 'pitar':
-                play_beep()
-            elif user_input == 'exit' or user_input == 'salir':
+            elif user_input == 'quit' or user_input == 'salir':
                 return 'exit'
 
+        if selected_obj_flag :
+            selected_obj_name = selected_obj["name"]
+            if any(obj["name"] == selected_obj_name for obj in detected_objects):
+                updated_distance = get_updated_distance(selected_obj, detected_objects)
+                speak(language_actions[language]['start_beeping'], language)
+                user_input = get_voice_input(language)
+                if user_input == 'start beeping':
+                    beeping_enabled = True
 
+
+        while beeping_enabled and selected_obj:
+            detected_objects = []
+            depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
+            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
+            updated_distance, centroid = get_updated_distance(selected_obj, detected_objects)
+            print(centroid)
+            print(selected_obj)
+            if centroid != 0:
+                # Check if the object's centroid is in the center third of the frame
+                if centroid[0] < left_boundary:
+                    speak("Object is on your left side")
+                elif centroid[0] > right_boundary:
+                    speak("Object is on your right side")
+                else:
+                    play_beep_sound(updated_distance)
+            else:
+                speak("Objects is not in the frame")
 
 try:
     speak("english or spanish?")

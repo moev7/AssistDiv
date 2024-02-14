@@ -10,6 +10,7 @@ from translations_es import LANGUAGE_ES
 import cv2
 import numpy as np
 from speech_utils import speak
+from collections import Counter
 
 def translate_object_name(object_name, language):
     translated_category = None
@@ -145,27 +146,11 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         # Get the category and translated name
         # category, translated_name = translate_object_name (MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx], language)
         # class_name = LANGUAGE[language].get(class_name, class_name)
-            
-
 
         object_name = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]
         category, translated_name = translate_object_name(object_name, language)
         if translated_name is None:
             translated_name = "Unknown"
-
-
-        # # Use translate_object_name to get the category and translated name
-        # category, translated_name = translate_object_name({"name": MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]}, language)
-        # if translated_name is None:
-        #     translated_name = "Unknown"
-
-        #enumerate the detected objects
-        display_text = f"{category}: {translated_name}"
-        distance_text = f"{mean_distance:.2f} m"
-
-
-        # display_text = f"{category}: {translated_name}"
-        # distance_text = f"{mean_distance:.2f} m"
 
         y, x = np.nonzero(instance_mask)
         x_center, y_center = int(np.mean(x)), int(np.mean(y))
@@ -182,6 +167,18 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
             "mask": instance_mask
         })
 
+    name_counts = Counter(obj["name"] for obj in detected_objects)
+    index = 0
+    for obj in detected_objects:
+        name = obj["name"]
+        count = name_counts[name]
+
+        if count > 1:
+            # Append enumeration to the name
+            index += 1  # Object index (starting from 1)
+            obj["name"] = f"{name} {index}"
+
+
     if mode == 'detail':
         for obj in detected_objects:
             text = f"{obj['name']}"
@@ -196,8 +193,11 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
             cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             text_position_start += 30
     else:
-        print("Invalid mode")
-        return None
+        for obj in detected_objects:
+            text = f"{obj['name']}"
+            cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            text_position_start += 30  # move down by 30px for next text
+        
 
         # text = f"{display_text}: {distance_text}"
         # cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
@@ -208,7 +208,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
     # Concatenate images horizontally
     images_concat = np.hstack((distance_image, output_image))
     cv2.imshow("Distances and Instance Segmentation", images_concat)
-    cv2.waitKey(0)
+    cv2.waitKey(1)
 
     # Sort detected_objects based on the x-coordinate of centroids
     detected_objects.sort(key=lambda obj: obj['centroid'][0])
