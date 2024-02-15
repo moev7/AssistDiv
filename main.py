@@ -39,14 +39,15 @@ def get_user_input(language):
     return get_voice_input(language)
 
 
-def process_main_menu(user_input, pipeline, predictor, color_image, depth_image, cfg, language, mode):
+def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode):
+    speak(language_actions[language]['welcome_message'], language)
     global beeping_enabled
     global selected_obj_flag
-
+    user_input = get_user_input(language)
     detected_objects = []
 
     if not beeping_enabled or not selected_obj_flag:
-        if user_input == 'scan' or user_input == 'escanear':
+        if user_input == 'scanner' or user_input == 'escanear':
             repeat = True
             scene_scan = True
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,  language, mode='')
@@ -71,7 +72,8 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
                 if user_input == 'repeat' or user_input == 'repetir':
                     get_objects_by_position(detected_objects, language)
                 elif user_input == "return" or user_input == 'regresar':
-                    return
+                    process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode)
+                    repeat = False
                 elif user_input == 'exit' or user_input == 'salir':
                     return 'exit'
 
@@ -84,7 +86,7 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
             user_input = get_voice_input(language)
             print(user_input)
             if user_input == 'select' or user_input == 'seleccionar':
-                selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image, 1280)
+                selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image, 1280, language)
                 selected_obj_flag = True
             elif user_input == 'quit' or user_input == 'salir':
                 return 'exit'
@@ -120,17 +122,10 @@ def process_main_menu(user_input, pipeline, predictor, color_image, depth_image,
 try:
     speak("english or spanish?")
     language = select_language()
-    speak(language_actions[language]['welcome_message'], language)
 
 
     while True:
-        user_input = get_user_input(language)
-        print(user_input)
-
-        if user_input == 'exit' or user_input == 'salir':
-            break
-
-        result = process_main_menu(user_input, pipeline, predictor, color_image, depth_image, cfg, language, mode='')
+        result = process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode='')
 
         if result == 'exit' or result == 'salir':
             break

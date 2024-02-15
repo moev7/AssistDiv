@@ -3,6 +3,7 @@ from num2words import num2words
 from speech_utils import speak, get_voice_input
 from relationship_utils import describe_relationship, generate_scene_graph, describe_all_relationships, plot_scene_graph
 import numpy as np
+from language_actions import language_actions
 
 
 def get_updated_distance(selected_obj, detected_objects):
@@ -12,7 +13,7 @@ def get_updated_distance(selected_obj, detected_objects):
     return 0, 0  # return None if the object is not found
 
 
-def get_object_distance(detected_objects, depth_image ,frame_width):
+def get_object_distance(detected_objects, depth_image ,frame_width, language):
     if not detected_objects:
         print("No objects detected.")
         speak("No objects detected.")
@@ -28,7 +29,7 @@ def get_object_distance(detected_objects, depth_image ,frame_width):
     
 
     try:
-        speak("Say the name of the object you want the distance for, or say Cancel")
+        speak(language_actions[language]['say_object_name'], language)
         object_name = get_voice_input()
         if object_name == 'cancel':
             print("Operation cancelled.")
@@ -62,8 +63,8 @@ def get_object_distance(detected_objects, depth_image ,frame_width):
             print("PATH: " + path_message)
             
         elif index == -1:
+            speak(language_actions[language]['object_not_found'], language)
             print("Object not found. Please say a valid object name.")
-            speak("Object not found. Please say a valid object name.")
             selected_obj = None
             selected_obj['distance'] = None
             
