@@ -8,6 +8,7 @@ from distance_utils import get_object_distance, get_updated_distance
 import time
 import cv2
 import numpy as np
+from rapidfuzz import fuzz
 
 beeping_enabled = False
 selected_obj_flag = False
@@ -44,12 +45,15 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
     global beeping_enabled
     global selected_obj_flag
     user_input = get_user_input(language)
+    print(user_input)
     detected_objects = []
-
+    
     if not beeping_enabled or not selected_obj_flag:
-        if user_input == 'scanner' or user_input == 'escanear':
+        if fuzz.ratio(user_input, 'scanner') > 50 or fuzz.ratio(user_input, 'escanear') > 50:
+            print(fuzz.ratio(user_input, 'scanner'))
             repeat = True
             scene_scan = True
+            depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,  language, mode='')
             while scene_scan == True:
                 speak(language_actions[language]['select_category_message'],language)
@@ -58,7 +62,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                 if mode == 'general':
                     detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='general')
                     scene_scan = False
-                elif mode == 'detail' or mode == 'detalle':
+                elif mode == 'detail' or mode == 'detallada':
                     detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
                     scene_scan = False
                 else:
@@ -69,39 +73,46 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                 speak(language_actions[language]['repeat_message'], language)
                 user_input = get_user_input(language)
 
-                if user_input == 'repeat' or user_input == 'repetir':
+                if fuzz.ratio(user_input, 'repeat') > 50 or fuzz.ratio(user_input, 'repetir') > 50:    
                     get_objects_by_position(detected_objects, language)
-                elif user_input == "return" or user_input == 'regresar':
+                elif fuzz.ratio(user_input, 'return') > 50 or fuzz.ratio(user_input, 'regresar') > 50:
                     process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode)
                     repeat = False
-                elif user_input == 'exit' or user_input == 'salir':
+                elif fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
                     return 'exit'
 
 
-        elif user_input == 'find objects' or user_input == 'buscar objetos':
+        elif fuzz.ratio(user_input, 'find objects') > 50 or fuzz.ratio(user_input, 'buscar objetos') > 50:
+            #selected_language = language
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
-            #get_objects_by_position(detected_objects, language)
+            get_objects_by_position(detected_objects, language)
 
             speak(language_actions[language]['select'], language)
             user_input = get_voice_input(language)
             print(user_input)
-            if user_input == 'select' or user_input == 'seleccionar':
-                selected_obj_distance, selected_obj = get_object_distance(detected_objects, depth_image, 1280, language)
+            if fuzz.ratio(user_input, 'select') > 50 or fuzz.ratio(user_input, 'seleccionar') > 50:    
+                selected_obj = get_object_distance(detected_objects, depth_image, 1280, language)
                 selected_obj_flag = True
-            elif user_input == 'quit' or user_input == 'salir':
+            elif fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
                 return 'exit'
 
-        if selected_obj_flag :
-            selected_obj_name = selected_obj["name"]
-            if any(obj["name"] == selected_obj_name for obj in detected_objects):
-                updated_distance = get_updated_distance(selected_obj, detected_objects)
-                speak(language_actions[language]['start_beeping'], language)
-                user_input = get_voice_input(language)
-                if user_input == 'start beeping':
-                    beeping_enabled = True
+            if selected_obj_flag :
+                selected_obj_name = selected_obj["name"]
+                if any(obj["name"] == selected_obj_name for obj in detected_objects):
+                    updated_distance = get_updated_distance(selected_obj, detected_objects)
+                    speak(language_actions[language]['start_beeping'], language)
+                    user_input = get_voice_input(language)
+                    if fuzz.ratio(user_input, 'start beeping') > 50 or fuzz.ratio(user_input, 'comenzar pitidos') > 50:
+                        beeping_enabled = True
+        
+        elif fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
+            return 'exit'
 
 
         while beeping_enabled and selected_obj:
+            # user_input = get_voice_input(language)
+            # if fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
+            #     break
             detected_objects = []
             depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
@@ -111,13 +122,14 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             if centroid != 0:
                 # Check if the object's centroid is in the center third of the frame
                 if centroid[0] < left_boundary:
-                    speak("Object is on your left side")
+                    speak(language_actions[language]['left_side_message'], language)
                 elif centroid[0] > right_boundary:
-                    speak("Object is on your right side")
+                    speak(language_actions[language]['right_side_message'], language)
                 else:
                     play_beep_sound(updated_distance)
             else:
-                speak("Objects is not in the frame")
+                speak(language_actions[language]['not_in_frame_message'], language)  
+
 
 try:
     speak("english or spanish?")
@@ -127,7 +139,7 @@ try:
     while True:
         result = process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode='')
 
-        if result == 'exit' or result == 'salir':
+        if fuzz.ratio(result, 'exit') > 50 or fuzz.ratio(result, 'salir') > 50:
             break
 
 finally:

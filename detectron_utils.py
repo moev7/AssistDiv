@@ -152,20 +152,21 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         if translated_name is None:
             translated_name = "Unknown"
 
-        y, x = np.nonzero(instance_mask)
-        x_center, y_center = int(np.mean(x)), int(np.mean(y))
+        if outputs["instances"].scores[i] >= 0.8:  # Only consider objects with score >= 0.8
+            y, x = np.nonzero(instance_mask)
+            x_center, y_center = int(np.mean(x)), int(np.mean(y))
 
-        centroid = (x_center, y_center)
+            centroid = (x_center, y_center)
 
-        detected_objects.append({
-            "id": i,
-            "name": translated_name,
-            "category": category,
-            "distance": mean_distance,
-            "centroid": centroid,
-            "box": box,
-            "mask": instance_mask
-        })
+            detected_objects.append({
+                "id": i,
+                "name": translated_name,
+                "category": category,
+                "distance": mean_distance,
+                "centroid": centroid,
+                "box": box,
+                "mask": instance_mask
+            })
 
     name_counts = Counter(obj["name"] for obj in detected_objects)
     index = 0

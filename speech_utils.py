@@ -6,6 +6,7 @@ from vosk import Model, KaldiRecognizer
 import pyaudio
 import pyttsx3
 import pygame
+from language_actions import language_actions
 
 def play_beep():
     pygame.mixer.init()
@@ -15,23 +16,24 @@ def play_beep():
 
 
 
-def speak(text, language='en', slow=False):
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 150 if slow else 200)  # Adjust the speaking rate
-    if language == 'es':
-        engine.setProperty('voice', 'spanish')  # Select Spanish voice
-    engine.say(text)
-    engine.runAndWait()
-    engine.runAndWait()
-
-
 # def speak(text, language='en', slow=False):
-#     tts = gTTS(text=text, lang=language, slow=slow)
-    
-#     with tempfile.NamedTemporaryFile(delete=True) as fp:
-#         temp_file = fp.name + ".mp3"
-#         tts.save(temp_file)
-#         os.system(f"mpg123 {temp_file}")
+#     engine = pyttsx3.init()
+#     engine.setProperty('rate', 150 if slow else 200)  # Adjust the speaking rate
+#     if language == 'es':
+#         engine.setProperty('voice', 'spanish')  # Select Spanish voice
+#     engine.say(text)
+#     engine.runAndWait()
+#     engine.runAndWait()
+
+
+def speak(text, language='en', slow=False):
+     tts = gTTS(text=text, lang=language, slow=slow)
+
+     with tempfile.NamedTemporaryFile(delete=True) as fp:
+         temp_file = fp.name + ".mp3"
+         tts.save(temp_file)
+         os.system(f"mpg123 {temp_file}")
+
 
 def announce_objects(detected_objects):
     if not detected_objects:
@@ -61,8 +63,8 @@ def get_voice_input(language = 'en'):
     p = pyaudio.PyAudio()
     stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8000)
     stream.start_stream()
-    speak("listening")    
-    print("Listening...")
+    speak(language_actions[language]['listening'], language)    
+    print(language_actions[language]['listening'])
 
     while True:
         data = stream.read(4000)

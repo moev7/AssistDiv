@@ -27,36 +27,42 @@ def get_object_distance(detected_objects, depth_image ,frame_width, language):
     #speak(detected_objects)
     '''
     
-
-    try:
+    object_found = False
+    while object_found == False:
         speak(language_actions[language]['say_object_name'], language)
-        object_name = get_voice_input()
+        object_name = get_voice_input(language)
+        print(object_name)
         if object_name == 'cancel':
             print("Operation cancelled.")
             return None, None
 
         # Find the object by name
         index = next((i for i, obj in enumerate(detected_objects) if obj["name"].lower() == object_name), -1)
-
+        
         if 0 <= index < len(detected_objects):
             selected_obj = detected_objects[index]
             x_center, y_center = selected_obj["centroid"]
 
-            direction = "in front of you"
+            direction = language_actions[language]['direction_front']
             if x_center < frame_width / 3:
-                direction = "on your left side"
+                direction = language_actions[language]['direction_left']
             elif x_center > 2 * frame_width / 3:
-                direction = "on your right side"
+                direction = language_actions[language]['direction_right']
 
-            print(f"The {selected_obj['name']} is {direction} {selected_obj['distance']:.2f} meters away.")
             distance = selected_obj['distance']
             integer_part, decimal_part = divmod(distance, 1)
             decimal_part = round(decimal_part * 100)
             integer_part_in_words = num2words(int(integer_part))
             decimal_part_in_words = num2words(int(decimal_part))
 
-            speak(f"The {selected_obj['name']} is {direction} {integer_part_in_words} point {decimal_part_in_words} meters away.")
-            print("\nRelationships with other objects:")
+            if language == "en":
+                speak(f"The {selected_obj['name']} is {direction} {integer_part_in_words} point {decimal_part_in_words} meters away.", language)
+                object_found = True
+            if language == "es":
+                speak(f"{selected_obj['name']} está {direction} {integer_part_in_words} punto {decimal_part_in_words} metros de distancia.", language)
+                object_found = True
+
+            #print("\nRelationships with other objects:")
             #relationships = describe_all_relationships(detected_objects)
             #elationship(selected_obj, detected_objects)
             path_message = find_clear_path(depth_image)
@@ -65,16 +71,10 @@ def get_object_distance(detected_objects, depth_image ,frame_width, language):
         elif index == -1:
             speak(language_actions[language]['object_not_found'], language)
             print("Object not found. Please say a valid object name.")
-            selected_obj = None
-            selected_obj['distance'] = None
-            
-    except ValueError:
-        print("Invalid input. Please enter a valid object name.")
-        speak("Invalid input. Please enter a valid object name.")
-        selected_obj = None
-        selected_obj['distance'] = None
-        
-    return selected_obj['distance'], selected_obj
+            #selected_obj = None
+            #selected_obj['distance'] = None
+    
+    return selected_obj
 
 
 
