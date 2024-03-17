@@ -52,8 +52,8 @@ def get_object_distance(detected_objects, depth_image ,frame_width, language):
             distance = selected_obj['distance']
             integer_part, decimal_part = divmod(distance, 1)
             decimal_part = round(decimal_part * 100)
-            integer_part_in_words = num2words(int(integer_part))
-            decimal_part_in_words = num2words(int(decimal_part))
+            integer_part_in_words = num2words(int(integer_part), lang=language)
+            decimal_part_in_words = num2words(int(decimal_part), lang=language)
 
             if language == "en":
                 speak(f"The {selected_obj['name']} is {direction} {integer_part_in_words} point {decimal_part_in_words} meters away.", language)

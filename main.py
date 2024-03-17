@@ -64,6 +64,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                     scene_scan = False
                 elif mode == 'detail' or mode == 'detallada':
                     detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
+                    get_objects_by_position(detected_objects, language)
                     scene_scan = False
                 else:
                     speak("Invalid", language)

@@ -1,7 +1,7 @@
 # Define language actions
 language_actions = {
     'en': {
-        'welcome_message': 'Hello, Welcome to Assist Div. Say "Scanner" for scene understanding and "Find objects" for object detection. Say "exit" to exit Assist Div.',
+        'welcome_message': 'Say "Scanner" or "Find objects" or "exit" ',
         'scan_scene_message': 'Scanning the scene...',
         'find_objects_message': 'Finding objects. Please wait.',
         'select': 'Say Select to select an object and say Exit to exit AssistDiv.',
@@ -20,7 +20,7 @@ language_actions = {
         'listening': 'listening...'
     },
     'es': {
-        'welcome_message': 'Hola, bienvenido a Assist Div. Diga "Escanear" para escanear la escena y "Buscar objetos" para localizar objetos. Diga "salir" para salir.',
+        'welcome_message': 'Diga "Escanear" o "Buscar objetos" o "salir" ',
         'scan_scene_message': 'Escaneando la escena...',
         'find_objects_message': 'Buscando objetos. Por favor, espera.',
         'select': 'Diga Seleccionar para seleccionar un objeto y diga Salir para salir.',

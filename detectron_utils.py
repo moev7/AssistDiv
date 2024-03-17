@@ -183,7 +183,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
     if mode == 'detail':
         for obj in detected_objects:
             text = f"{obj['name']}"
-            speak(text, language)
+            #speak(text, language)
             cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
             text_position_start += 30  # move down by 30px for next text
     elif mode == 'general':
