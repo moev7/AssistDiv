@@ -73,12 +73,19 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             while repeat:
                 speak(language_actions[language]['repeat_message'], language)
                 user_input = get_user_input(language)
+                print(user_input)
 
-                if fuzz.ratio(user_input, 'repeat') > 50 or fuzz.ratio(user_input, 'repetir') > 50:    
-                    get_objects_by_position(detected_objects, language)
-                elif fuzz.ratio(user_input, 'return') > 50 or fuzz.ratio(user_input, 'regresar') > 50:
-                    process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode)
+                if fuzz.ratio(user_input, 'repeat') > 80 or fuzz.ratio(user_input, 'repetir') > 80: 
+                    if mode == 'general':
+                        detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='general') 
+                    elif mode == 'detail' or mode == 'detallada':
+                        detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
+                        get_objects_by_position(detected_objects, language)
+                elif fuzz.ratio(user_input, 'return') > 80 or fuzz.ratio(user_input, 'regresar') > 80:
                     repeat = False
+                    print("Returning to main menu")
+                    print(repeat)
+                    #process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode)
                 elif fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
                     return 'exit'
 
