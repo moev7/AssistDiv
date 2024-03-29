@@ -1,5 +1,5 @@
 from camera_utils import initialize_camera, get_camera_frames
-from detectron_utils import initialize_detectron, run_object_detection, visualize_and_get_detected_objects, get_objects_by_position
+from detectron_utils import initialize_detectron, run_object_detection, visualize_and_get_detected_objects, get_objects_by_position, visualize_and_get_detected_objects_faster_rcnn, initialize_detectron_faster_rcnn, get_objects_by_position_faster_rcnn
 from sound_utils import play_beep_sound, play_obstacle_beep_sound
 from speech_utils import speak, announce_objects, get_voice_input, play_beep
 from relationship_utils import describe_relationship
@@ -13,7 +13,7 @@ from rapidfuzz import fuzz
 beeping_enabled = False
 selected_obj_flag = False
 pipeline = initialize_camera()
-depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
+depth_frame, color_frame, depth_image, color_image = get_camera_frames(pipeline)
 
 predictor, cfg = initialize_detectron()
 print("FRAME WIDTH: ")
@@ -41,10 +41,11 @@ def get_user_input(language):
 
 
 def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode):
-    speak(language_actions[language]['welcome_message'], language)
+    #speak(language_actions[language]['welcome_message'], language)
     global beeping_enabled
     global selected_obj_flag
-    user_input = get_user_input(language)
+    user_input = 'find objects'
+    #get_user_input(language)
     print(user_input)
     detected_objects = []
     
@@ -53,7 +54,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             print(fuzz.ratio(user_input, 'scanner'))
             repeat = True
             scene_scan = True
-            depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
+            depth_frame, color_frame, depth_image, color_image = get_camera_frames(pipeline)
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,  language, mode='')
             while scene_scan == True:
                 speak(language_actions[language]['select_category_message'],language)
@@ -64,7 +65,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                     scene_scan = False
                 elif mode == 'detail' or mode == 'detallada':
                     detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
-                    get_objects_by_position(detected_objects, language)
+                    get_objects_by_position_faster_rcnn(detected_objects, language)
                     scene_scan = False
                 else:
                     speak("Invalid", language)
@@ -80,7 +81,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                         detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='general') 
                     elif mode == 'detail' or mode == 'detallada':
                         detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
-                        get_objects_by_position(detected_objects, language)
+                        get_objects_by_position_faster_rcnn(detected_objects, language)
                 elif fuzz.ratio(user_input, 'return') > 80 or fuzz.ratio(user_input, 'regresar') > 80:
                     repeat = False
                     print("Returning to main menu")
@@ -91,15 +92,18 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
 
 
         elif fuzz.ratio(user_input, 'find objects') > 50 or fuzz.ratio(user_input, 'buscar objetos') > 50:
+            predictor, cfg = initialize_detectron_faster_rcnn()
+            print("loading detectron again")
             #selected_language = language
-            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
-            get_objects_by_position(detected_objects, language)
+            detected_objects = visualize_and_get_detected_objects_faster_rcnn(predictor, color_image, depth_image, cfg, language, mode='')
+            get_objects_by_position_faster_rcnn(detected_objects, language)
 
-            speak(language_actions[language]['select'], language)
-            user_input = get_voice_input(language)
+            #speak(language_actions[language]['select'], language)
+            user_input = 'select'
+            #get_voice_input(language)
             print(user_input)
             if fuzz.ratio(user_input, 'select') > 50 or fuzz.ratio(user_input, 'seleccionar') > 50:    
-                selected_obj = get_object_distance(detected_objects, depth_image, 1280, language)
+                selected_obj = get_object_distance(detected_objects, depth_image, 720, language)
                 selected_obj_flag = True
             elif fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
                 return 'exit'
@@ -108,8 +112,9 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                 selected_obj_name = selected_obj["name"]
                 if any(obj["name"] == selected_obj_name for obj in detected_objects):
                     updated_distance = get_updated_distance(selected_obj, detected_objects)
-                    speak(language_actions[language]['start_beeping'], language)
-                    user_input = get_voice_input(language)
+                    #speak(language_actions[language]['start_beeping'], language)
+                    user_input = 'start beeping'
+                    #get_voice_input(language)
                     if fuzz.ratio(user_input, 'start beeping') > 50 or fuzz.ratio(user_input, 'comenzar pitidos') > 50:
                         beeping_enabled = True
         
@@ -122,8 +127,8 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             # if fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
             #     break
             detected_objects = []
-            depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
-            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
+            depth_frame, color_frame, depth_image, color_image = get_camera_frames(pipeline)
+            detected_objects = visualize_and_get_detected_objects_faster_rcnn(predictor, color_image, depth_image, cfg, language, mode='')
             updated_distance, centroid = get_updated_distance(selected_obj, detected_objects)
             print(centroid)
             print(selected_obj)
@@ -134,7 +139,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                 elif centroid[0] > right_boundary:
                     speak(language_actions[language]['right_side_message'], language)
                 else:
-                    play_beep_sound(updated_distance)
+                    play_beep_sound(updated_distance, language)
             else:
                 speak(language_actions[language]['not_in_frame_message'], language)  
 
@@ -142,7 +147,6 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
 try:
     speak("english or spanish?")
     language = select_language()
-
 
     while True:
         result = process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode='')

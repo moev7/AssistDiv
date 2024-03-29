@@ -6,12 +6,11 @@ def initialize_camera():
     # Initialize the RealSense camera
     pipeline = rs.pipeline()
     config = rs.config()
-    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-    config.enable_stream(rs.stream.gyro)
-    config.enable_stream(rs.stream.accel)
+    config.enable_stream(rs.stream.depth, 640, 360, rs.format.z16, 30)  # Reduced resolution
+    config.enable_stream(rs.stream.color, 640, 360, rs.format.bgr8, 30)  # Reduced resolution
     pipeline.start(config)
     return pipeline
+
 
 
 def get_camera_frames(pipeline, skip_frames=50):
@@ -27,11 +26,7 @@ def get_camera_frames(pipeline, skip_frames=50):
     depth_image = np.asanyarray(depth_frame.get_data())
     color_image = np.asanyarray(color_frame.get_data())
 
-    # Get the IMU frames
-    gyro_frame = frames.first_or_default(rs.stream.gyro)
-    accel_frame = frames.first_or_default(rs.stream.accel)
-
-    return depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame
+    return depth_frame, color_frame, depth_image, color_image
 
 
 def stop_camera(pipeline):
