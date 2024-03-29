@@ -13,7 +13,7 @@ from rapidfuzz import fuzz
 beeping_enabled = False
 selected_obj_flag = False
 pipeline = initialize_camera()
-depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
+depth_image, color_image = get_camera_frames(pipeline)
 
 predictor, cfg = initialize_detectron()
 print("FRAME WIDTH: ")
@@ -53,7 +53,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             print(fuzz.ratio(user_input, 'scanner'))
             repeat = True
             scene_scan = True
-            depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
+            depth_image, color_image = get_camera_frames(pipeline)
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,  language, mode='')
             while scene_scan == True:
                 speak(language_actions[language]['select_category_message'],language)
@@ -99,7 +99,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             user_input = get_voice_input(language)
             print(user_input)
             if fuzz.ratio(user_input, 'select') > 50 or fuzz.ratio(user_input, 'seleccionar') > 50:    
-                selected_obj = get_object_distance(detected_objects, depth_image, 1280, language)
+                selected_obj = get_object_distance(detected_objects, depth_image, 640, language)
                 selected_obj_flag = True
             elif fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
                 return 'exit'
@@ -122,11 +122,9 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             # if fuzz.ratio(user_input, 'exit') > 50 or fuzz.ratio(user_input, 'salir') > 50:
             #     break
             detected_objects = []
-            depth_frame, color_frame, depth_image, color_image, gyro_frame, accel_frame = get_camera_frames(pipeline)
+            depth_image, color_image = get_camera_frames(pipeline)
             detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
             updated_distance, centroid = get_updated_distance(selected_obj, detected_objects)
-            print(centroid)
-            print(selected_obj)
             if centroid != 0:
                 # Check if the object's centroid is in the center third of the frame
                 if centroid[0] < left_boundary:
@@ -134,7 +132,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                 elif centroid[0] > right_boundary:
                     speak(language_actions[language]['right_side_message'], language)
                 else:
-                    play_beep_sound(updated_distance)
+                    play_beep_sound(updated_distance, language)
             else:
                 speak(language_actions[language]['not_in_frame_message'], language)  
 

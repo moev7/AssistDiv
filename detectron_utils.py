@@ -50,7 +50,7 @@ def get_objects_by_position(detected_objects, language):
     front_objects = []
     right_objects = []
 
-    image_width = 1280 
+    image_width = 640
     
     left_threshold = image_width // 3
     right_threshold = (2 * image_width) // 3

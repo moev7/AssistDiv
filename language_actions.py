@@ -16,7 +16,8 @@ language_actions = {
         'direction_front': 'in front of you',
         'direction_left': 'on your left side',
         'direction_right': 'on your right side',
-        'listening': 'listening...'
+        'listening': 'listening...',
+        'stop': 'stop'
     },
     'es': {
         'welcome_message': 'Diga "Escanear" o "Buscar objetos" o "salir" ',
@@ -36,6 +37,7 @@ language_actions = {
         'direction_left': 'a tu izquierda',
         'direction_right': 'a tu derecha',
         'listening': 'escuchando...',
+        'stop': 'para'
 
     }
 }
