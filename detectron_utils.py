@@ -50,7 +50,7 @@ def get_objects_by_position(detected_objects, language):
     front_objects = []
     right_objects = []
 
-    image_width = 640
+    image_width = 1280
     
     left_threshold = image_width // 3
     right_threshold = (2 * image_width) // 3
@@ -146,13 +146,14 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         # Get the category and translated name
         # category, translated_name = translate_object_name (MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx], language)
         # class_name = LANGUAGE[language].get(class_name, class_name)
-
+        wanted_objects = ["person", "bed"] 
         object_name = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]
-        category, translated_name = translate_object_name(object_name, language)
-        if translated_name is None:
-            translated_name = "Unknown"
+        
+        if object_name in wanted_objects:
+            category, translated_name = translate_object_name(object_name, language)
+            if translated_name is None:
+                translated_name = "Unknown"
 
-        if outputs["instances"].scores[i] >= 0.8:  # Only consider objects with score >= 0.8
             y, x = np.nonzero(instance_mask)
             x_center, y_center = int(np.mean(x)), int(np.mean(y))
 
@@ -211,6 +212,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
     images_concat = np.hstack((distance_image, output_image))
     cv2.imshow("Distances and Instance Segmentation", images_concat)
     cv2.waitKey(1)
+    
 
     # Sort detected_objects based on the x-coordinate of centroids
     detected_objects.sort(key=lambda obj: obj['centroid'][0])
@@ -232,7 +234,7 @@ def initialize_detectron():
 
     cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml"))
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml")
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6
 
     cfg.MODEL.DEVICE = "cuda" #cpu or cuda
     predictor = DefaultPredictor(cfg)

@@ -39,6 +39,7 @@ def select_language():
 def get_user_input(language):
     return get_voice_input(language)
 
+detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,  "en", mode='')
 
 def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, language, mode):
     speak(language_actions[language]['welcome_message'], language)
@@ -78,7 +79,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
                 if fuzz.ratio(user_input, 'repeat') > 80 or fuzz.ratio(user_input, 'repetir') > 80: 
                     if mode == 'general':
                         detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='general') 
-                    elif mode == 'detail' or mode == 'detallada':
+                    elif mode == 'detail' or mode == 'detailed' or mode == 'detallada':
                         detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
                         get_objects_by_position(detected_objects, language)
                 elif fuzz.ratio(user_input, 'return') > 80 or fuzz.ratio(user_input, 'regresar') > 80:
@@ -92,7 +93,8 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
 
         elif fuzz.ratio(user_input, 'find objects') > 50 or fuzz.ratio(user_input, 'buscar objetos') > 50:
             #selected_language = language
-            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='')
+            depth_image, color_image = get_camera_frames(pipeline)
+            detected_objects = visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg, language, mode='detail')
             get_objects_by_position(detected_objects, language)
 
             speak(language_actions[language]['select'], language)
@@ -127,11 +129,7 @@ def process_main_menu(pipeline, predictor, color_image, depth_image, cfg, langua
             updated_distance, centroid = get_updated_distance(selected_obj, detected_objects)
             if centroid != 0:
                 # Check if the object's centroid is in the center third of the frame
-                if centroid[0] < left_boundary:
-                    speak(language_actions[language]['left_side_message'], language)
-                elif centroid[0] > right_boundary:
-                    speak(language_actions[language]['right_side_message'], language)
-                else:
+                if centroid[0] > left_boundary and centroid[0] < right_boundary:
                     play_beep_sound(updated_distance, language)
             else:
                 speak(language_actions[language]['not_in_frame_message'], language)  

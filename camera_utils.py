@@ -6,8 +6,8 @@ def initialize_camera():
     # Initialize the RealSense camera
     pipeline = rs.pipeline()
     config = rs.config()
-    config.enable_stream(rs.stream.depth, 640, 360, rs.format.z16, 30) 
-    config.enable_stream(rs.stream.color, 640, 360, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30) 
+    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
     pipeline.start(config)
     return pipeline
 
