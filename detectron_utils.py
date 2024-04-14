@@ -146,7 +146,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         # Get the category and translated name
         # category, translated_name = translate_object_name (MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx], language)
         # class_name = LANGUAGE[language].get(class_name, class_name)
-        wanted_objects = ["person", "bed"] 
+        wanted_objects = ["laptop", "tv", "umbrella", "chair", "cup", "remote", "mouse", "keyboard", "scissors", "bottle", "wine glass", "cell phone"] 
         object_name = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes[class_idx]
         
         if object_name in wanted_objects:
@@ -205,7 +205,7 @@ def visualize_and_get_detected_objects(predictor, color_image, depth_image, cfg,
         # text = f"{display_text}: {distance_text}"
         # cv2.putText(distance_image, text, (10, text_position_start), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         # text_position_start += 30  # move down by 30px for next text
-
+    print(detected_objects)
     output_image = out.get_image()[:, :, ::-1]
 
     # Concatenate images horizontally
